@@ -3,11 +3,11 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "utils/non-copyable.h"
 #include <QMainWindow>
 #include <qmainwindow.h>
 
-
-class MainWindow: public QMainWindow {
+class MainWindow: public QMainWindow, private NonCopyable {
     Q_OBJECT
 public:
     explicit MainWindow(QMainWindow* parent = nullptr);

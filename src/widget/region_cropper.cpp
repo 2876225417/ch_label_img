@@ -25,12 +25,14 @@ RegionCropper::RegionCropper(QWidget* parent)
 RegionCropper::~RegionCropper() = default;
 
 
-const QRect& RegionCropper::get_selection_rect() const {
+auto RegionCropper::get_selection_rect() const -> const QRect& {
     return m_selection_rect;
 }
 
 void RegionCropper::mousePressEvent(QMouseEvent* event) {
-    if (event->button() == Qt::LeftButton) {
+    // 鼠标按下时切换 框选状态
+    // 鼠标按下时的位置为 初始位置
+    if (event->button() == Qt::LeftButton) { // 只响应鼠标左键
         m_is_selecting = true;
         m_start_point = event->pos();
         m_selection_rect = QRect(m_start_point, QSize());
@@ -39,7 +41,8 @@ void RegionCropper::mousePressEvent(QMouseEvent* event) {
 }
 
 void RegionCropper::mouseMoveEvent(QMouseEvent* event) {
-    if (m_is_selecting) {
+    
+    if (m_is_selecting) { // 鼠标在 框选状态激活时 移动会进行框选
         QPoint current_point = event->pos();
         m_selection_rect = QRect(m_start_point, current_point).normalized();
         update();
@@ -47,7 +50,8 @@ void RegionCropper::mouseMoveEvent(QMouseEvent* event) {
 }
 
 void RegionCropper::mouseReleaseEvent(QMouseEvent* event) {
-    if (event->button() == Qt::LeftButton && m_is_selecting) {
+    if (event->button() == Qt::LeftButton && // 鼠标释放时需为左键
+        m_is_selecting) {                    // 且是处在框选状态的
         m_is_selecting = false;
         
         if (m_selection_rect.width() > 0 && m_selection_rect.height() > 0)
@@ -57,11 +61,11 @@ void RegionCropper::mouseReleaseEvent(QMouseEvent* event) {
                      << '\n';
 
         // m_selection_rect = QRect();
-        update();
+        // update();
     }
 }
 
-void RegionCropper::paintEvent(QPaintEvent* event) {
+void RegionCropper::paintEvent(QPaintEvent* /*event*/) {
     if (!m_is_selecting            || // 未进行选择 
          m_selection_rect.isNull() || // 选框无效
         !m_selection_rect.isValid()   // 选框无效
@@ -70,10 +74,12 @@ void RegionCropper::paintEvent(QPaintEvent* event) {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
+    // 框选框的边界
     QPen pen(QColor(0, 120, 215));
     pen.setWidth(2);
-    painter.setPen(pen);
+    painter.setPen(pen); 
 
+    // 框选框的填充
     QBrush brush(QColor(0, 120, 215, 70));
     painter.setBrush(brush);
     painter.drawRect(m_selection_rect);

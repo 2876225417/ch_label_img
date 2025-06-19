@@ -39,7 +39,3 @@ target_link_libraries(main
     Qt6::Widgets
 )
 
-
-
-
-
