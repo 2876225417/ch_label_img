@@ -11,7 +11,7 @@ void ToolBar::create_actions() {
         ActionId               id;          // 动作 id
         QStyle::StandardPixmap icon;        // 动作 图标
         QString                text;        // 动作 文本内容
-        QString                status_tip;  // 动作 提示
+        QString                status_tip;  // 动作 状态栏提示信息
         QKeySequence           shortcut;    // 动作 快捷键
     };
 

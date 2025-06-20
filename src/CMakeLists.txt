@@ -4,6 +4,8 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/widget)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/window)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/page)
+
 
 file(GLOB_RECURSE PROJECT_HEADERS
     ${CMAKE_SOURCE_DIR}/include
@@ -25,4 +27,5 @@ target_link_libraries(label_img
     PRIVATE
     widget
     window
+    page
 )

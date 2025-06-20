@@ -1,0 +1,21 @@
+#ifndef LABEL_IMG_PAGE
+#define LABEL_IMG_PAGE
+
+#include "page/base_page.h"
+#include <qregion.h>
+#include <qtmetamacros.h>
+#include <qwidget.h>
+
+class LabelImagePage: public BasePage {
+    Q_OBJECT
+public:
+    explicit LabelImagePage(QWidget* parent = nullptr);
+    ~LabelImagePage() override;
+signals:
+
+private:
+    void set_layout() override;
+    void set_connections() override;
+};
+
+#endif // LABEL_IMG_PAGE
