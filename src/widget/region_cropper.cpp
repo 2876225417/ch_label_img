@@ -54,14 +54,16 @@ void RegionCropper::mouseReleaseEvent(QMouseEvent* event) {
         m_is_selecting) {                    // 且是处在框选状态的
         m_is_selecting = false;
         
-        if (m_selection_rect.width() > 0 && m_selection_rect.height() > 0)
-            qDebug() << "Cropped rect" << '\n'
-                     << "height: " << m_selection_rect.height()
-                     << "width:  " << m_selection_rect.width()
-                     << '\n';
+        // if (m_selection_rect.width() > 0 && m_selection_rect.height() > 0)
+        //     qDebug() << "Cropped rect" << '\n'
+        //              << "height: " << m_selection_rect.height()
+        //              << "width:  " << m_selection_rect.width()
+        //              << '\n';
 
-        // m_selection_rect = QRect();
-        // update();
+        /* 框选结束后重置
+         * m_selection_rect = QRect();
+         * update();
+         */
     }
 }
 

@@ -35,6 +35,9 @@ Diagnostics:
     UnusedIncludes: Yes
     MissingIncludes: Yes
 
+    Suppress:
+        - unknown-argument
+
 InlayHints:
     Enabled: Yes
     ParameterNames: Enabled

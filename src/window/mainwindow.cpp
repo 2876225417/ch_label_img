@@ -1,4 +1,6 @@
 #include "widget/region_cropper.h"
+#include "widget/status_bar.h"
+#include "widget/tool_bar.h"
 #include <qboxlayout.h>
 #include <qmainwindow.h>
 #include <qwidget.h>
@@ -29,6 +31,13 @@ void MainWindow::set_layout() {
 
     auto* region_cropper = new RegionCropper();
     main_layout->addWidget(region_cropper);
+
+    auto tool_bar = new ToolBar(this);
+    addToolBar(tool_bar);
+
+    auto status_bar = new StatusBar(this);
+    setStatusBar(status_bar);
+
 }
 
 void MainWindow::set_connections() {
