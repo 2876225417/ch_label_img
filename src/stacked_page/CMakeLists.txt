@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 
 file(GLOB PAGE_HEADERS
-    "${CMAKE_SOURCE_DIR}/include/page/*.h"
-    "${CMAKE_SOURCE_DIR}/include/page/*.hpp"
+    "${CMAKE_SOURCE_DIR}/include/stacked_page/*.h"
+    "${CMAKE_SOURCE_DIR}/include/stacked_page/*.hpp"
 )
 
 file(GLOB PAGE_SOURCES

@@ -2,7 +2,7 @@
 #define STACKED_PAGE_WIDGET_H
 
 
-#include "page/base_page.h"
+#include "stacked_page/base_page.h"
 #include "utils/non-copyable.h"
 #include "widget/side_menu_bar.h"
 #include <qstackedwidget.h>
@@ -17,6 +17,8 @@ public:
     using PageId = SideMenuBar::PageId;
     [[nodiscard]] auto get_page(PageId id) const -> BasePage*;
 
+public slots:
+    void set_current_page(PageId id);
 
 private:
     void create_pages();

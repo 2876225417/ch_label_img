@@ -1,6 +1,6 @@
-#include "page/base_page.h"
-#include "page/home.h"
-#include "page/label_img.h"
+#include "stacked_page/base_page.h"
+#include "stacked_page/home.h"
+#include "stacked_page/label_img.h"
 #include "widget/region_cropper.h"
 #include "widget/side_menu_bar.h"
 #include "widget/stacked_page_widget.h"
@@ -42,10 +42,7 @@ void MainWindow::set_layout() {
 }
 
 void MainWindow::set_connections() {
-    connect(m_side_menu_bar, &SideMenuBar::page_changed, this, [this](StackedPageWidget::PageId id) {
-        m_stacked_page->setCurrentIndex(static_cast<int>(id));
-    });
-
+    connect(m_side_menu_bar, &SideMenuBar::page_changed, m_stacked_page, &StackedPageWidget::set_current_page);
 }
 
 

@@ -21,6 +21,7 @@ include(PrettyPrint)
 
 pretty_message(INFO  "Configuring project: ${PROJECT_NAME} v${PROJECT_VERSION}")
 pretty_message(VINFO "======================Compiler Info============================")
+pretty_message(VINFO "  CMAKE_GENERATOR:                ${CMAKE_GENERATOR}")
 pretty_message(VINFO "  CMAKE_CXX_STANDARD:             ${CMAKE_CXX_STANDARD}")
 pretty_message(VINFO "  CMAKE_CXX_COMPILER:             ${CMAKE_CXX_COMPILER}")
 pretty_message(VINFO "  CMAKE_CXX_COMPILER_VERSION:     ${CMAKE_CXX_COMPILER_VERSION}")

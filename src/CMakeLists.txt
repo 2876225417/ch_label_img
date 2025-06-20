@@ -4,7 +4,7 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/widget)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/window)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/page)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/stacked_page)
 
 
 file(GLOB_RECURSE PROJECT_HEADERS

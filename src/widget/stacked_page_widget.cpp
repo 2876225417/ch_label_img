@@ -1,6 +1,6 @@
-#include "page/base_page.h"
-#include "page/home.h"
-#include "page/label_img.h"
+#include "stacked_page/base_page.h"
+#include "stacked_page/home.h"
+#include "stacked_page/label_img.h"
 #include <functional>
 #include <qstackedwidget.h>
 #include <qwidget.h>
@@ -31,6 +31,10 @@ void StackedPageWidget::create_pages() {
     }
 }
 
+void StackedPageWidget::set_current_page(PageId id) {
+    setCurrentIndex(static_cast<int>(id));
+}
+
 auto StackedPageWidget::get_page(PageId id) const -> BasePage* {
     return m_pages.value(id, nullptr);
 }
@@ -42,3 +46,6 @@ StackedPageWidget::StackedPageWidget(QWidget* parent)
 };
 
 StackedPageWidget::~StackedPageWidget() = default;
+
+
+

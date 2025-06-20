@@ -1,7 +1,7 @@
 #ifndef LABEL_IMG_PAGE
 #define LABEL_IMG_PAGE
 
-#include "page/base_page.h"
+#include "stacked_page/base_page.h"
 #include <qregion.h>
 #include <qtmetamacros.h>
 #include <qwidget.h>

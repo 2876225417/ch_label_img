@@ -1,7 +1,7 @@
 #ifndef HOME_H
 #define HOME_H
 
-#include "page/base_page.h"
+#include "stacked_page/base_page.h"
 #include <qtmetamacros.h>
 #include <qwidget.h>
 class HomePage: public BasePage {

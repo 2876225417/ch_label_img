@@ -1,6 +1,6 @@
-#include "page/base_page.h"
+#include "stacked_page/base_page.h"
 #include "widget/region_cropper.h"
-#include <page/label_img.h>
+#include <stacked_page/label_img.h>
 #include <qboxlayout.h>
 #include <qcolor.h>
 #include <qpixmap.h>

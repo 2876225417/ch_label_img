@@ -1,5 +1,5 @@
-#include "page/base_page.h"
-#include <page/home.h>
+#include "stacked_page/base_page.h"
+#include <stacked_page/home.h>
 #include <qboxlayout.h>
 #include <qnamespace.h>
 #include <qwidget.h>
