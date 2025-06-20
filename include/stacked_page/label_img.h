@@ -2,6 +2,7 @@
 #define LABEL_IMG_PAGE
 
 #include "stacked_page/base_page.h"
+#include "widget/labeling_canvas.h"
 #include <qregion.h>
 #include <qtmetamacros.h>
 #include <qwidget.h>
@@ -16,6 +17,9 @@ signals:
 private:
     void set_layout() override;
     void set_connections() override;
+
+
+    LabelingCanvas* m_canvas;
 };
 
 #endif // LABEL_IMG_PAGE

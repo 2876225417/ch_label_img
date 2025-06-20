@@ -1,3 +1,4 @@
+#include "widget/selection_box.h"
 #include <qcolor.h>
 #include <qevent.h>
 #include <qpaintdevice.h>
@@ -12,21 +13,8 @@
 #include <QBrush>
 #include <QApplication>
 
-
-RegionCropper::RegionCropper(QWidget* parent)
-    : QWidget{parent}
-    , m_is_selecting{false}
-    {
-    setAttribute(Qt::WA_TranslucentBackground);
-    
-    setFocusPolicy(Qt::StrongFocus);
-}
-
-RegionCropper::~RegionCropper() = default;
-
-
 auto RegionCropper::get_selection_rect() const -> const QRect& {
-    return m_selection_rect;
+    return m_current_rect;
 }
 
 void RegionCropper::mousePressEvent(QMouseEvent* event) {
@@ -35,17 +23,19 @@ void RegionCropper::mousePressEvent(QMouseEvent* event) {
     if (event->button() == Qt::LeftButton) { // 只响应鼠标左键
         m_is_selecting = true;
         m_start_point = event->pos();
-        m_selection_rect = QRect(m_start_point, QSize());
-        update();
+        m_current_rect = QRect(m_start_point, QSize());
+        m_selection_box->set_selection_rect(m_current_rect);
+        m_selection_box->show();
     }
 }
 
 void RegionCropper::mouseMoveEvent(QMouseEvent* event) {
     
+    emit mouse_moved(event->pos());
+
     if (m_is_selecting) { // 鼠标在 框选状态激活时 移动会进行框选
-        QPoint current_point = event->pos();
-        m_selection_rect = QRect(m_start_point, current_point).normalized();
-        update();
+        m_current_rect = QRect(m_start_point, event->pos()).normalized();
+        m_selection_box->set_selection_rect(m_current_rect);
     }
 }
 
@@ -53,39 +43,31 @@ void RegionCropper::mouseReleaseEvent(QMouseEvent* event) {
     if (event->button() == Qt::LeftButton && // 鼠标释放时需为左键
         m_is_selecting) {                    // 且是处在框选状态的
         m_is_selecting = false;
-        
-        // if (m_selection_rect.width() > 0 && m_selection_rect.height() > 0)
-        //     qDebug() << "Cropped rect" << '\n'
-        //              << "height: " << m_selection_rect.height()
-        //              << "width:  " << m_selection_rect.width()
-        //              << '\n';
-
-        /* 框选结束后重置
-         * m_selection_rect = QRect();
-         * update();
-         */
+        if (m_current_rect.width() > 0 &&
+            m_current_rect.height()
+           ) emit region_selected(m_current_rect);
     }
 }
 
-void RegionCropper::paintEvent(QPaintEvent* /*event*/) {
-    if (!m_is_selecting            || // 未进行选择 
-         m_selection_rect.isNull() || // 选框无效
-        !m_selection_rect.isValid()   // 选框无效
-       ) return;
-
-    QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing);
-
-    // 框选框的边界
-    QPen pen(QColor(0, 120, 215));
-    pen.setWidth(2);
-    painter.setPen(pen); 
-
-    // 框选框的填充
-    QBrush brush(QColor(0, 120, 215, 70));
-    painter.setBrush(brush);
-    painter.drawRect(m_selection_rect);
+void RegionCropper::resizeEvent(QResizeEvent* event) {
+    QWidget::resizeEvent(event);
+    m_selection_box->setGeometry(this->rect());
 }
+
+
+RegionCropper::RegionCropper(QWidget* parent)
+    : QWidget{parent}
+    , m_is_selecting{false}
+    {
+    setMouseTracking(true);
+
+    m_selection_box = new SelectionBox{this};
+}
+
+RegionCropper::~RegionCropper() = default;
+
+
+
 
 
 
