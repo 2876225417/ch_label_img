@@ -19,12 +19,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(PrettyPrint)
 include(ModuleInfo)
-
+include(QtInfo)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 
 if(Qt6_FOUND)
-
+    show_qt_info(DETAILED)
 endif()
 
 
