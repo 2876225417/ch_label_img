@@ -10,34 +10,39 @@
 
 class SelectionBox: public QWidget, private NonCopyable {
     Q_OBJECT
-public:
-    explicit SelectionBox(QWidget* parent = nullptr);
+    public:
+    explicit SelectionBox(int id, QWidget* parent = nullptr);
     ~SelectionBox() override;
+    
+    enum class HoverRegion: std::int8_t {
+        None, Body,
+        Top, Bottom, Right, Left,
+        TopLeft, TopRight, BottomLeft, BottomRight
+    };
+    
+    [[nodiscard]] auto id() const -> int;
+    [[nodiscard]] auto get_selection_rect() const -> const QRect&;
+    [[nodiscard]] auto get_hover_region(const QPoint&) const -> HoverRegion;
 signals:
-    void rect_changed(const QRect&);
-    void editing_finished(const QRect&);
+    void rect_changed(int id, const QRect&);
+    void editing_finished(int id, const QRect&);
 public slots:
     void set_selection_rect(const QRect& rect);
-
-protected:
+    void set_highlighted(bool highlighted);
+public:
     void mousePressEvent(QMouseEvent*)   override;
     void mouseMoveEvent(QMouseEvent*)    override;
     void mouseReleaseEvent(QMouseEvent*) override;
     void paintEvent(QPaintEvent*)        override;
 
 private:
-    enum class HoverRegion: std::int8_t {
-        None, Body,
-        Top, Bottom, Right, Left,
-        TopLeft, TopRight, BottomLeft, BottomRight
-    };
-
-    QRect m_selection_rect;  
-    HoverRegion m_hover_region;
-
-    void update_cursor_shape(const QPoint&);
-    [[nodiscard]] auto get_hover_region(const QPoint&) const -> HoverRegion;
+    const int m_id;
+    bool m_is_highlighted;
     bool m_is_interacting;
+    QRect m_selection_rect;  
     QPoint m_drag_start_pos;
+    HoverRegion m_hover_region;
+    
+    void update_cursor_shape(const QPoint&);
 };
 #endif // SELECTION_BOX_H

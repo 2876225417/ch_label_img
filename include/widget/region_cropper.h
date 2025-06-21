@@ -18,11 +18,13 @@ public:
     explicit RegionCropper(QWidget* parent = nullptr);
     ~RegionCropper() override;
 
-    [[nodiscard]] auto get_selection_rect() const -> const QRect&;
-
 signals:
     void region_selected(const QRect& region);
     void mouse_moved(const QPoint& pos);
+
+public slots:
+    void remove_selection_box(int id);
+
 
 protected:
     void mousePressEvent(QMouseEvent*)   override;
@@ -32,10 +34,10 @@ protected:
 private:
     bool   m_is_selecting;    // 记录当前框选的状态(状态：正在框选/未框选)
     QPoint m_start_point;     // 框选的起始位置
-    QRect  m_current_rect;    // 框选的类矩形框
-
-    SelectionBox* m_selection_box;
-
+    int    m_current_box_id;  // 当前框选框的 id
+    int    m_next_box_id;     // 下一个框选框的 id
+    
+    QMap<int, SelectionBox*> m_selection_boxes;
 };
 
 #endif // REGION_CROPPER_H

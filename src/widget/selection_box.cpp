@@ -14,6 +14,17 @@
 constexpr int HANDLE_SIZE = 8;
 constexpr int BORDER_WIDTH = 5;
 
+auto SelectionBox::get_selection_rect() const -> const QRect& {
+    return m_selection_rect;
+}
+
+void SelectionBox::set_highlighted(bool highlighted) {
+    if (m_is_highlighted != highlighted) {
+        m_is_highlighted = highlighted;
+        update();
+    }
+}
+
 void SelectionBox::paintEvent(QPaintEvent* /*event*/) {
     if (m_selection_rect.isNull() ||
        !m_selection_rect.isValid()
@@ -26,7 +37,8 @@ void SelectionBox::paintEvent(QPaintEvent* /*event*/) {
     QPen pen(QColor(0, 120, 215, 200), 2, Qt::SolidLine);
     painter.setPen(pen);
     // 选框填充
-    painter.setBrush(QBrush(QColor(0, 120, 215, 70)));
+    if (m_is_highlighted) painter.setBrush(QBrush(QColor(0, 120, 215, 130)));
+    else                  painter.setBrush(QBrush(QColor(0, 120, 215, 70)));
     painter.drawRect(m_selection_rect);
 
     // 边框 8 个点
@@ -41,8 +53,8 @@ void SelectionBox::paintEvent(QPaintEvent* /*event*/) {
     painter.drawRect(m_selection_rect.right() - HANDLE_SIZE / 2, m_selection_rect.bottom() - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE);     // BottomRight
     painter.drawRect(m_selection_rect.center().x() - HANDLE_SIZE / 2, m_selection_rect.y() - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE);     // Top
     painter.drawRect(m_selection_rect.center().x() - HANDLE_SIZE / 2, m_selection_rect.bottom() - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE);// Bottom
-    painter.drawRect(m_selection_rect.x() - HANDLE_SIZE / 2, m_selection_rect.center().y() - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE);              // Left
-    painter.drawRect(m_selection_rect.right() - HANDLE_SIZE / 2, m_selection_rect.center().y() - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE);          // Right
+    painter.drawRect(m_selection_rect.x() - HANDLE_SIZE / 2, m_selection_rect.center().y() - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE);     // Left
+    painter.drawRect(m_selection_rect.right() - HANDLE_SIZE / 2, m_selection_rect.center().y() - HANDLE_SIZE / 2, HANDLE_SIZE, HANDLE_SIZE); // Right
 }
 
 
@@ -76,39 +88,43 @@ void SelectionBox::mouseMoveEvent(QMouseEvent* event) {
 
         set_selection_rect(new_rect.normalized());
         m_drag_start_pos = event->pos();
-        emit rect_changed(m_selection_rect);
-    } else update_cursor_shape(event->pos());
-
-    event->accept();
+        emit rect_changed(m_id, m_selection_rect);
+        event->accept();
+    } else {
+        update_cursor_shape(event->pos());
+        event->ignore();
+    }
 }
 
 void SelectionBox::mouseReleaseEvent(QMouseEvent* event) {
-    if (event->button() == Qt::LeftButton || 
+    if (event->button() == Qt::LeftButton &&
         m_is_interacting ) {
         m_is_interacting = false;
-        emit editing_finished(m_selection_rect);
-        event->accept();
-    }
+        emit editing_finished(m_id, m_selection_rect);
+        event->accept(); 
+    } else event->ignore();
 }
 
 void SelectionBox::update_cursor_shape(const QPoint& pos) {
     HoverRegion region = get_hover_region(pos);
     if (region != m_hover_region) {
         m_hover_region = region;
-        QCursor new_cursor = Qt::ArrowCursor;
-        switch (m_hover_region) {
-            case HoverRegion::Top:
-            case HoverRegion::Bottom:       new_cursor = Qt::SizeVerCursor;   break;
-            case HoverRegion::Left: 
-            case HoverRegion::Right:        new_cursor = Qt::SizeHorCursor;   break;
-            case HoverRegion::TopLeft:
-            case HoverRegion::BottomRight:  new_cursor = Qt::SizeFDiagCursor; break;
-            case HoverRegion::TopRight:
-            case HoverRegion::BottomLeft:   new_cursor = Qt::SizeBDiagCursor; break;
-            case HoverRegion::Body:         new_cursor = Qt::SizeAllCursor;   break;
-            default: break;
+        if (m_is_interacting) {
+            QCursor new_cursor = Qt::ArrowCursor;
+            switch (m_hover_region) {
+                case HoverRegion::Top:
+                case HoverRegion::Bottom:       new_cursor = Qt::SizeVerCursor;   break;
+                case HoverRegion::Left: 
+                case HoverRegion::Right:        new_cursor = Qt::SizeHorCursor;   break;
+                case HoverRegion::TopLeft:
+                case HoverRegion::BottomRight:  new_cursor = Qt::SizeFDiagCursor; break;
+                case HoverRegion::TopRight:
+                case HoverRegion::BottomLeft:   new_cursor = Qt::SizeBDiagCursor; break;
+                case HoverRegion::Body:         new_cursor = Qt::SizeAllCursor;   break;
+                default: break;
+            }
+            setCursor(new_cursor);
         }
-        setCursor(new_cursor);
     }
 }
 
@@ -135,8 +151,6 @@ auto SelectionBox::get_hover_region(const QPoint& pos) const -> HoverRegion {
     return HoverRegion::None;
 }
 
-
-
 void SelectionBox::set_selection_rect(const QRect& rect) {
     if (m_selection_rect != rect) {
         m_selection_rect = rect;
@@ -144,8 +158,12 @@ void SelectionBox::set_selection_rect(const QRect& rect) {
     }
 }
 
-SelectionBox::SelectionBox(QWidget* parent)
+auto SelectionBox::id() const -> int { return m_id; }
+
+SelectionBox::SelectionBox(int id, QWidget* parent)
     : QWidget{parent}
+    , m_id{id}
+    , m_is_highlighted{false}
     , m_is_interacting{false}
     , m_hover_region{HoverRegion::None}
     {
