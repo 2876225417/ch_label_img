@@ -41,8 +41,10 @@ private:
     bool m_is_interacting;
     QRect m_selection_rect;  
     QPoint m_drag_start_pos;
+    QRect m_original_rect;
     HoverRegion m_hover_region;
     
     void update_cursor_shape(const QPoint&);
+
 };
 #endif // SELECTION_BOX_H

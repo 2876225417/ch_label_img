@@ -34,13 +34,18 @@ void RegionCropper::mousePressEvent(QMouseEvent* event) {
         }
         
         if (clicked_box) {
-            QPoint box_pos = clicked_box->mapFromParent(event->pos());
+            qDebug() << "Current clicked box id: " << clicked_box->id();
+            clicked_box->raise();
+            QPointF box_pos = clicked_box->mapFromParent(event->pos());
+            QPointF global_pos = clicked_box->mapFromGlobal(box_pos);
             QMouseEvent box_event(
                 event->type(),
                 box_pos,
+                global_pos,
                 event->button(),
                 event->buttons(),
-                event->modifiers()
+                event->modifiers(),
+                event->pointingDevice()
             );
             clicked_box->mousePressEvent(&box_event);
             event->accept();
@@ -73,6 +78,8 @@ void RegionCropper::mouseMoveEvent(QMouseEvent* event) {
         if (region != SelectionBox::HoverRegion::None) {
             hover_box = box;
             hover_region = region;
+            // hover 到的那个选框置顶 
+            box->raise();
             break;
         }
     }
@@ -102,13 +109,16 @@ void RegionCropper::mouseMoveEvent(QMouseEvent* event) {
             box->set_selection_rect(QRect(m_start_point, event->pos()).normalized());
         event->accept();
     } else if (hover_box) {
-            QPoint box_pos = hover_box->mapFromParent(event->pos());
+            QPointF box_pos = hover_box->mapFromParent(event->pos());
+            QPointF global_pos = hover_box->mapFromGlobal(box_pos);
             QMouseEvent box_event(
                 event->type(),
                 box_pos,
+                global_pos,
                 event->button(),
                 event->buttons(),
-                event->modifiers()
+                event->modifiers(),
+                event->pointingDevice()
             );
             hover_box->mouseMoveEvent(&box_event);
             event->accept();
@@ -133,14 +143,17 @@ void RegionCropper::mouseReleaseEvent(QMouseEvent* event) {
             for (auto it = m_selection_boxes.constEnd(); it != m_selection_boxes.constBegin(); ) {
                 --it;
                 SelectionBox* box = it.value();
-                QPoint box_pos = box->mapFromParent(event->pos());
+                QPointF box_pos = box->mapFromParent(event->pos());
+                QPointF global_pos = box->mapFromGlobal(box_pos);
                 if (box->get_hover_region(event->pos()) != SelectionBox::HoverRegion::None) {
                     QMouseEvent box_event(
                         event->type(),
                         box_pos,
+                        global_pos,
                         event->button(),
                         event->buttons(),
-                        event->modifiers()
+                        event->modifiers(),
+                        event->pointingDevice()
                     );
                     box->mouseReleaseEvent(&box_event);
                 }

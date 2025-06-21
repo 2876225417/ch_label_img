@@ -59,18 +59,20 @@ void SelectionBox::paintEvent(QPaintEvent* /*event*/) {
 
 
 void SelectionBox::mousePressEvent(QMouseEvent* event) {
-    if (event->button() == Qt::LeftButton &&
-        m_hover_region != HoverRegion::None
-       ) {
-        m_is_interacting = true;
-        m_drag_start_pos = event->pos();
-        event->accept();
+    if (event->button() == Qt::LeftButton) {
+        m_hover_region = get_hover_region(event->pos());
+        if (m_hover_region != HoverRegion::None) {
+            m_is_interacting = true;
+            m_drag_start_pos = event->pos();
+            m_original_rect = m_selection_rect;
+            event->accept();
+        } else event->ignore();
     } else event->ignore();
 }
 
 void SelectionBox::mouseMoveEvent(QMouseEvent* event) {
     if (m_is_interacting) {
-        QRect new_rect = m_selection_rect;
+        QRect new_rect = m_original_rect;
         QPoint delta = event->pos() - m_drag_start_pos;
 
         switch (m_hover_region) {
@@ -87,7 +89,6 @@ void SelectionBox::mouseMoveEvent(QMouseEvent* event) {
         }
 
         set_selection_rect(new_rect.normalized());
-        m_drag_start_pos = event->pos();
         emit rect_changed(m_id, m_selection_rect);
         event->accept();
     } else {
@@ -169,7 +170,7 @@ SelectionBox::SelectionBox(int id, QWidget* parent)
     {
     setAttribute(Qt::WA_TranslucentBackground);
     setMouseTracking(true);
-    hide();
+    setAttribute(Qt::WA_Hover);
 }
 
 SelectionBox::~SelectionBox() = default;

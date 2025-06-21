@@ -18,6 +18,15 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 include(PrettyPrint)
+include(ModuleInfo)
+
+
+find_package(Qt6 REQUIRED COMPONENTS Widgets)
+
+if(Qt6_FOUND)
+
+endif()
+
 
 pretty_message(INFO  "Configuring project: ${PROJECT_NAME} v${PROJECT_VERSION}")
 pretty_message(VINFO "======================Compiler Info============================")
@@ -32,3 +41,5 @@ pretty_message(VINFO "  CMAKE_RUNTIME_OUTPUT_DIRECTORY: ${CMAKE_RUNTIME_OUTPUT_D
 pretty_message(VINFO "===============================================================")
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/src)
+
+show_all_modules_summary()

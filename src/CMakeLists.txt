@@ -1,11 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
-
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/qtils)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/widget)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/window)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/stacked_page)
-
 
 file(GLOB_RECURSE PROJECT_HEADERS
     ${CMAKE_SOURCE_DIR}/include
@@ -28,4 +26,5 @@ target_link_libraries(label_img
     widget
     window
     page
+    qtils
 )
