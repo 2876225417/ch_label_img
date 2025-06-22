@@ -38,6 +38,8 @@ target_link_libraries(widget
     Qt6::Widgets    
 )
 
+auto_enable_pch(widget widget)
+
 if (Widget_ENABLE_CUSTOM_STYLES)
     pretty_message(VINFO "Widget: ENABLE_CUSTOM_STYLES")
     target_compile_definitions(widget PRIVATE Widget_ENABLE_CUSTOM_STYLES)

@@ -35,6 +35,9 @@ target_link_libraries(window
     Qt6::Widgets    
 )
 
+auto_enable_pch(window window)
+
+
 set_target_properties(window PROPERTIES
     VERSION     ${PROJECT_VERSION}
     SOVERSION   ${PROJECT_VERSION_MAJOR}

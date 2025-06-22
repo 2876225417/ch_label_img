@@ -163,7 +163,6 @@ if (CMAKE_CXX_STANDARD GREATER_EQUAL 20)
 
     if (_HAS_STD_FORMAT)    # Enable cpp std format 
         set(HAVE_STD_FORMAT ON CACHE INTERNAL "std::format is avaible")
-    
     else() 
         set(HAVE_STD_FORMAT OFF CACHE INTERNAL "std::format is unavaible")
     endif()

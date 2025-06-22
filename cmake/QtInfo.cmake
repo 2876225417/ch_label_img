@@ -6,7 +6,7 @@ function(show_qt_info)
     cmake_parse_arguments(ARG "${options}" "" "" ${ARGN})
 
     if (NOT Qt6_FOUND AND NOT Qt5_FOUND)
-        pretty_message(OPTION "Qt not found, skipping Qt into display")
+        pretty_message(OPTION "Qt not found, skipping Qt info display")
         return()
     endif()
 
@@ -22,27 +22,52 @@ function(show_qt_info)
         set(QT_PREFIX "Qt5")
     endif()
 
-    if (TARGET ${QT_PREFIX}::Core)
-        get_target_property(QT_VERSION ${QT_PREFIX}::Core VERSION)
+    if (DEFINED ${QT_PREFIX}_VERSION)
+        pretty_message(INFO "Qt Version: ${${QT_PREFIX}_VERSION}")
+    elseif (DEFINED QT_VERSION)
         pretty_message(INFO "Qt Version: ${QT_VERSION}")
-        pretty_message(INFO "Qt Major Version: ${QT_VERSION_MAJOR}")
+    else()
+        if (DEFINED ${QT_PREFIX}Core_VERSION)
+            pretty_message(INFO "Qt Version: ${${QT_PREFIX}Core_VERSION}")
+        else()
+            pretty_message(INFO "Qt Version: Unknown")
+        endif()
+    endif()
+
+    pretty_message(INFO "Qt Major Version: ${QT_VERSION_MAJOR}")
+
+    if (DEFINED ${QT_PREFIX}_VERSION_MAJOR)
+        pretty_message(DEBUG "  Major: ${${QT_PREFIX}_VERSION_MAJOR}")
+    endif()
+    if (DEFINED ${QT_PREFIX}_VERSION_MINOR)
+        pretty_message(DEBUG "  Major: ${${QT_PREFIX}_VERSION_MINOR}")
+    endif()
+    if (DEFINED ${QT_PREFIX}_VERSION_PATCH)
+        pretty_message(DEBUG "  Major: ${${QT_PREFIX}_VERSION_PATCH}")
     endif()
 
     if (DEFINED ${QT_PREFIX}_DIR)
         pretty_message(INFO "Qt Directory: ${${QT_PREFIX}_DIR}")
     endif()
 
-    if (TARGET ${QT_PREFIX}::Core)
-        get_target_property(QT_CORE_LOCATION ${QT_PREFIX}::Core LOCATION)
-        if (QT_CORE_LOCATION)
-            get_filename_component(QT_INSTALL_PREFIX "${QT_CORE_LOCATION}" DIRECTORY)
-            get_filename_component(QT_INSTALL_PREFIX "${QT_INSTALL_PREFIX}" DIRECTORY)
-            pretty_message(INFO "Qt Install Prefix: ${QT_INSTALL_PREFIX}")
+    if (DEFINED QT_INSTALL_PREFIX)
+        pretty_message(INFO "Qt Install Prefix: ${QT_INSTALL_PREFIX}")
+    elseif (DEFINED ${QT_PREFIX}_INSTALL_PREFIX)
+        pretty_message(INFO "Qt Install Prefix: ${${QT_PREFIX}_INSTALL_PREFIX}")
+    else()
+        if (TARGET ${QT_PREFIX}::qmake)
+            get_target_property(QMAKE_LOCATION ${QT_PREFIX}::qmake LOCATION)
+            if (QMAKE_LOCATION)
+                get_filename_component(QT_BIN_DIR "${QMAKE_LOCATION}" DIRECTORY)
+                get_filename_component(QT_INSTALL_PREFIX "${QT_BIN_DIR}" DIRECTORY)
+                pretty_message(INFO "Qt Install Prefix: ${QT_INSTALL_PREFIX}")
+            endif()
+
         endif()
     endif()
 
     pretty_message(INFO "Qt Components Found:")
-    _show_qt_compoents(${QT_PREFIX})
+    _show_qt_components(${QT_PREFIX})
 
     if (ARG_DETAILED)
         pretty_message(INFO "")
@@ -53,7 +78,7 @@ function(show_qt_info)
     pretty_message(STATUS "==============================================")
 endfunction()
 
-function(_show_qt_compoents QT_PREFIX)
+function(_show_qt_components QT_PREFIX)
     set(QT_COMMON_COMPONENTS
         Core
         Gui
@@ -149,9 +174,9 @@ function(_show_qt_detailed_info QT_PREFIX)
             endif()
 
             if (EXISTS ${tool_path})
-                pretty_message(SUCCESS "  ✓ ${tool}: ${tool_path}")
+                pretty_message(SUCCESS  "  ✓ ${tool}: ${tool_path}")
             else()
-                pretty_message(OPTION  "  ? ${tool}: ${tool_path} (not found)")
+                pretty_message(OPTIONAL "  ? ${tool}: ${tool_path} (not found)")
             endif()
         endif()
     endforeach()
@@ -164,7 +189,67 @@ function(_show_qt_detailed_info QT_PREFIX)
         endif()
     endif()
     
+    if (DEFINED QT_QML_DIR OR DEFINED ${QT_PREFIX}_QML_DIR)
+        if (DEFINED ${QT_PREFIX}_QML_DIR)
+            pretty_message(INFO     "Qt QML Directory: ${${QT_PREFIX}_QML_DIR}")
+        else()
+            pretty_message(OPTIONAL "Qt QML Directory: ${QT_QML_DIR}")
+        endif()
+    endif()
+endfunction()
+
+function(show_qt_deploy_info TARGET_NAME)
+    if (NOT TARGET ${TARGET_NAME})
+        pretty_message(ERROR "Target '${TARGET_NAME}' does not exist")
+        return()
+    endif()
+
+    pretty_message(INFO "Qt Deployment Info for ${TARGET_NAME}:")
     
+    get_target_property(link_libs ${TARGET_NAME} LINK_LIBRARIES)
+    if (link_libs)
+        set(qt_libs "")
+        foreach(lib ${link_libs})
+            if (lib MATCHES "^Qt[0-9]+::")
+                list(APPEND qt_libs ${lib})
+            endif()
+        endforeach()
 
+        if (qt_libs)
+            pretty_message(INFO "  Qt Libraries Used:")
+            foreach(lib ${qt_libs})
+                pretty_message(INFO "   - ${lib}")
+            endforeach()
+        endif()
+    endif()
 
+    if (WIN32)
+        pretty_message(INFO "  Deployment Tool: windeployqt")
+    elseif (APPLE)
+        pretty_message(INFO "  Deployment Tool: macdeployqt")
+    else()
+        pretty_message(INFO "  Deployment: Manual or use linuxdeployqt")
+    endif()
+endfunction()
+
+function(setup_qt_target TARGET_NAME)
+    if (NOT TARGET ${TARGET_NAME})
+        return()
+    endif()
+
+    set_target_properties(${TARGET_NAME} PROPERTIES
+        AUTOMOC ON
+        AUTOUIC ON 
+        AUTORCC ON
+    )
+
+    target_compile_features(${TARGET_NAME} PUBLIC cxx_std_17)
+
+    if (WIN32)
+        set_target_properties(${TARGET_NAME} PROPERTIES
+            WIN32_EXECUTABLE TRUE
+        )
+    endif()
+
+    pretty_message(INFO "Qt target '${TARGET_NAME}' configured with AUTOMOC, AUTOUIC, AUTORCC")
 endfunction()

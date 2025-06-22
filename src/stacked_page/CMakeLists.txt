@@ -35,6 +35,8 @@ target_link_libraries(page
     Qt6::Widgets    
 )
 
+auto_enable_pch(page stacked_page)
+
 set_target_properties(page PROPERTIES
     VERSION     ${PROJECT_VERSION}
     SOVERSION   ${PROJECT_VERSION_MAJOR}
