@@ -22,17 +22,6 @@ include(ModuleInfo)
 include(QtInfo)
 include(PCH)
 
-pch_configure()
-
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
-
-if(Qt6_FOUND)
-    show_qt_info()
-endif()
-
-setup_project_pch()
-
-
 pretty_message(INFO  "Configuring project: ${PROJECT_NAME} v${PROJECT_VERSION}")
 pretty_message(VINFO "======================Compiler Info============================")
 pretty_message(VINFO "  CMAKE_GENERATOR:                ${CMAKE_GENERATOR}")
@@ -44,6 +33,15 @@ pretty_message(VINFO "  CMAKE_CXX_COMPILER_ABI:         ${CMAKE_CXX_COMPILER_ABI
 pretty_message(VINFO "  CMAKE_BUILD_TYPE:               ${CMAKE_BUILD_TYPE}")
 pretty_message(VINFO "  CMAKE_RUNTIME_OUTPUT_DIRECTORY: ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 pretty_message(VINFO "===============================================================")
+
+pch_configure()
+
+find_package(Qt6 REQUIRED COMPONENTS Widgets)
+if(Qt6_FOUND)
+    show_qt_info()
+endif()
+
+setup_project_pch()
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/src)
 

@@ -1,5 +1,7 @@
 include(${CMAKE_CURRENT_LIST_DIR}/PrettyPrint.cmake)
 
+
+# 描述: 检查当前工具链是否支持 PCH(一般用在主CMakeLists中)
 function(check_pch_support)
     if (CMAKE_VERSION VERSION_LESS "3.16")
         pretty_message(WARNING "CMake version < 3.16, PCH support disabled")
@@ -16,6 +18,7 @@ function(check_pch_support)
     endif()
 endfunction()
 
+# 描述: 启用PCH (一般用在主CMakeLists中)
 # 用法: enable_pch(<target> [INTERFACE] [PRIVATE <headers>...] [PUBLIC <headers>...])
 function(enable_pch TARGET_NAME)
     cmake_parse_arguments(ARG "INTERFACE" "" "PRIVATE;PUBLIC" ${ARGN})
@@ -113,11 +116,7 @@ function(auto_enable_pch TARGET_NAME MODULE_NAME)
 
 endfunction()
 
-
-
-
-
-
+# 描述: 创建PCH目标
 function(create_pch_target PCH_TARGET_NAME PCH_HEADER)
     if (NOT PCH_SUPPORTED)
         return()
@@ -130,6 +129,7 @@ function(create_pch_target PCH_TARGET_NAME PCH_HEADER)
     pretty_message(INFO    "  PCH header: ${PCH_HEADER}")
 endfunction()
 
+# 构建项目PCH
 function(setup_project_pch)
     cmake_parse_arguments(ARG "" "" "TARGETS" ${ARGN})
 
@@ -169,6 +169,7 @@ function(setup_project_pch)
     pretty_message(STATUS "==============================================")
 endfunction()
 
+# 统计 PCH 信息
 function(show_pch_stats)
     if(NOT PCH_SUPPORTED)
         pretty_message(INFO "PCH not supported on this platform")
@@ -189,6 +190,7 @@ function(show_pch_stats)
     endif()
 endfunction()
 
+# 配置 PCH
 function(pch_configure)
     if (CMAKE_BUILD_TYPE MATCHES "[Dd]eb")
         option(USE_PCH_IN_DEBUG "Use PCH in Debug builds" ON)

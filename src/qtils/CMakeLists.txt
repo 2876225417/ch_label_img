@@ -1,13 +1,11 @@
 cmake_minimum_required(VERSION 3.16)
 
 module_begin("Qtils")
-
 check_module_dependencies("Qtils"
     REQUIRES Qt6::Widgets
 )
 
-pretty_message(INFO "Configuring qtils...")
-
+# =============== qtils configuration ===============
 file(GLOB QTILS_HEADERS
     "${CMAKE_SOURCE_DIR}/include/qtils/*.h"
     "${CMAKE_SOURCE_DIR}/include/qtils/*.hpp"
@@ -43,6 +41,10 @@ set_target_properties(qtils PROPERTIES
     SOVERSION   ${PROJECT_VERSION_MAJOR}
     OUTPUT_NAME "qtils"
 )
+# ===================================================
+
+
+
 
 
 module_target_info(qtils SHOW_PROPERTIES)

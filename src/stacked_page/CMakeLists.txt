@@ -7,6 +7,7 @@ check_module_dependencies("Stacked_page"
     OPTIONAL Qt6::Designer Qt6::UiTools
 )
 
+# =============== stacked_page configuration ===============
 file(GLOB PAGE_HEADERS
     "${CMAKE_SOURCE_DIR}/include/stacked_page/*.h"
     "${CMAKE_SOURCE_DIR}/include/stacked_page/*.hpp"
@@ -42,6 +43,8 @@ set_target_properties(page PROPERTIES
     SOVERSION   ${PROJECT_VERSION_MAJOR}
     OUTPUT_NAME "page"
 )
+
+# ==========================================================
 
 module_target_info(page SHOW_PROPERTIES)
 module_show_dependencies(page)

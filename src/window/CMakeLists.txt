@@ -6,6 +6,7 @@ check_module_dependencies("Window"
     REQUIRES Qt6::Widgets
 )
 
+# =============== window configuration ===============
 file(GLOB_RECURSE WINDOW_HEADERS 
     "${CMAKE_SOURCE_DIR}/include/window/*.h"
     "${CMAKE_SOURCE_DIR}/include/window/*.hpp"
@@ -17,7 +18,6 @@ file(GLOB_RECURSE WINDOW_SOURCES
 
 module_show_files("Headers" "${WINDOW_HEADERS}")
 module_show_files("Sources" "${WINDOW_SOURCES}")
-
 
 add_library(window
     SHARED
@@ -37,12 +37,12 @@ target_link_libraries(window
 
 auto_enable_pch(window window)
 
-
 set_target_properties(window PROPERTIES
     VERSION     ${PROJECT_VERSION}
     SOVERSION   ${PROJECT_VERSION_MAJOR}
     OUTPUT_NAME "window"
 )
+# ====================================================
 
 module_target_info(window SHOW_PROPERTIES)
 module_show_dependencies(window)

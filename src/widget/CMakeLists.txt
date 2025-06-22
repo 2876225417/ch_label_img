@@ -10,6 +10,7 @@ check_module_dependencies("Widget"
 module_feature("Widget" "CUSTOM_STYLES" ON "Enable custom widget styles")
 module_feature("Widget" "ANIMATIONS"    ON "Enable widget animations")
 
+# =============== widget configuration ===============
 file(GLOB WIDGET_HEADERS
     "${CMAKE_SOURCE_DIR}/include/widget/*.h"
     "${CMAKE_SOURCE_DIR}/include/widget/*.hpp"
@@ -38,8 +39,6 @@ target_link_libraries(widget
     Qt6::Widgets    
 )
 
-auto_enable_pch(widget widget)
-
 if (Widget_ENABLE_CUSTOM_STYLES)
     pretty_message(VINFO "Widget: ENABLE_CUSTOM_STYLES")
     target_compile_definitions(widget PRIVATE Widget_ENABLE_CUSTOM_STYLES)
@@ -50,11 +49,14 @@ if (Widget_ENABLE_ANIMATIONS)
     target_compile_definitions(widget PRIVATE Widget_ENABLE_ANIMATIONS)
 endif()
 
+auto_enable_pch(widget widget)
+
 set_target_properties(widget PROPERTIES
     VERSION     ${PROJECT_VERSION}
     SOVERSION   ${PROJECT_VERSION_MAJOR}
     OUTPUT_NAME "widget"
 )
+# ====================================================
 
 module_target_info(widget SHOW_PROPERTIES)
 module_show_dependencies(widget)
