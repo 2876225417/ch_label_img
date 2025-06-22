@@ -1,7 +1,9 @@
+#include "utils/action_types.h"
 #include "widget/selection_box.h"
 #include <qapplication.h>
 #include <qcolor.h>
 #include <qevent.h>
+#include <qkeysequence.h>
 #include <qnamespace.h>
 #include <qpaintdevice.h>
 #include <qpainter.h>
@@ -15,13 +17,32 @@
 #include <QBrush>
 #include <QApplication>
 
+#include <qtils/action_manager.h>
+
+void RegionCropper::setup_actions() {
+    auto& am = ActionManager::instance();
+
+    am.create_action(AnnotationAction::DeleteBox, tr("Delete Selection Box"), QKeySequence(Qt::Key_Delete), tr("Delete the selected annotation box"));
+
+    am.register_handler(AnnotationAction::DeleteBox, [this]() {
+        qDebug() << "Delete box (box id: " << m_selected_box_id << ")"; 
+        remove_selection_box(m_selected_box_id);
+    });
+
+    for (auto* action: am.actions_for_category(ActionCategory::Annotation))
+        addAction(action);
+
+}
+
+
+
 void RegionCropper::mousePressEvent(QMouseEvent* event) {
     // 鼠标按下时切换 框选状态
     // 鼠标按下时的位置为 初始位置
     if (event->button() == Qt::LeftButton) { // 只响应鼠标左键
         SelectionBox* clicked_box = nullptr;
         SelectionBox::HoverRegion hover_region = SelectionBox::HoverRegion::None;
-
+        
         for (auto it = m_selection_boxes.constEnd(); it != m_selection_boxes.constBegin(); ) {
             --it;
             auto* box = it.value();
@@ -80,6 +101,7 @@ void RegionCropper::mouseMoveEvent(QMouseEvent* event) {
             hover_region = region;
             // hover 到的那个选框置顶 
             box->raise();
+            
             break;
         }
     }
@@ -180,7 +202,8 @@ RegionCropper::RegionCropper(QWidget* parent)
     , m_next_box_id(0)
     {
     setMouseTracking(true);
-
+    setFocusPolicy(Qt::StrongFocus);
+    setup_actions();
 }
 
 RegionCropper::~RegionCropper() = default;

@@ -3,6 +3,10 @@
 
 #include <pch.h>
 
+
+#include <QMap>
+
+
 // ===== Qt GUI 头文件 =====
 #include <QtGui/QImage>
 #include <QtGui/QPixmap>

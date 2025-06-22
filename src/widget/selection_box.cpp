@@ -65,6 +65,7 @@ void SelectionBox::mousePressEvent(QMouseEvent* event) {
             m_is_interacting = true;
             m_drag_start_pos = event->pos();
             m_original_rect = m_selection_rect;
+            qDebug() << "Selection box with id: " << m_id << "clicked";
             event->accept();
         } else event->ignore();
     } else event->ignore();

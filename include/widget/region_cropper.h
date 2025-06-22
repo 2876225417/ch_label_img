@@ -24,8 +24,6 @@ signals:
 
 public slots:
     void remove_selection_box(int id);
-
-
 protected:
     void mousePressEvent(QMouseEvent*)   override;
     void mouseMoveEvent(QMouseEvent*)    override;
@@ -36,8 +34,12 @@ private:
     QPoint m_start_point;     // 框选的起始位置
     int    m_current_box_id;  // 当前框选框的 id
     int    m_next_box_id;     // 下一个框选框的 id
-    
+    int    m_selected_box_id; // 当前选中的选框 id
+
+
     QMap<int, SelectionBox*> m_selection_boxes;
+
+    void setup_actions();
 };
 
 #endif // REGION_CROPPER_H

@@ -3,9 +3,7 @@
 
 #include "stacked_page/base_page.h"
 #include "widget/labeling_canvas.h"
-#include <qregion.h>
-#include <qtmetamacros.h>
-#include <qwidget.h>
+
 
 class LabelImagePage: public BasePage {
     Q_OBJECT

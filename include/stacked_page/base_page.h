@@ -1,10 +1,7 @@
 #ifndef BASE_PAGE_H
 #define BASE_PAGE_H
 
-#include <QWidget>
-#include <qtmetamacros.h>
-#include <qwidget.h>
-#include <utils/non-copyable.h>
+#include "stacked_page_pch.h"
 
 class BasePage: public QWidget, private NonCopyable {
     Q_OBJECT

@@ -2,8 +2,7 @@
 #define HOME_H
 
 #include "stacked_page/base_page.h"
-#include <qtmetamacros.h>
-#include <qwidget.h>
+
 class HomePage: public BasePage {
     Q_OBJECT
 public:
