@@ -18,11 +18,14 @@ auto SelectionBox::get_selection_rect() const -> const QRect& {
     return m_selection_rect;
 }
 
-void SelectionBox::set_highlighted(bool highlighted) {
-    if (m_is_highlighted != highlighted) {
-        m_is_highlighted = highlighted;
-        update();
-    }
+void SelectionBox::set_highlighted_status(bool highlighted, HighlightedType type) {
+    if (type == HighlightedType::Hovered && 
+        m_higlighted_status.is_hovered != highlighted
+       ) { m_higlighted_status.is_hovered = highlighted; update(); }
+
+    if (type == HighlightedType::Selected &&
+        m_higlighted_status.is_selected != highlighted
+       ) { m_higlighted_status.is_selected = highlighted; update(); }
 }
 
 void SelectionBox::paintEvent(QPaintEvent* /*event*/) {
@@ -37,8 +40,13 @@ void SelectionBox::paintEvent(QPaintEvent* /*event*/) {
     QPen pen(QColor(0, 120, 215, 200), 2, Qt::SolidLine);
     painter.setPen(pen);
     // 选框填充
-    if (m_is_highlighted) painter.setBrush(QBrush(QColor(0, 120, 215, 130)));
-    else                  painter.setBrush(QBrush(QColor(0, 120, 215, 70)));
+    if (m_higlighted_status.is_selected)    
+        painter.setBrush(QBrush(QColor(0, 120, 215, 170)));
+    else if(m_higlighted_status.is_hovered) 
+        painter.setBrush(QBrush(QColor(0, 120, 215, 120)));
+    else                                
+        painter.setBrush(QBrush(QColor(0, 120, 215, 70)));
+    
     painter.drawRect(m_selection_rect);
 
     // 边框 8 个点
@@ -65,8 +73,7 @@ void SelectionBox::mousePressEvent(QMouseEvent* event) {
             m_is_interacting = true;
             m_drag_start_pos = event->pos();
             m_original_rect = m_selection_rect;
-            qDebug() << "Selection box with id: " << m_id << "clicked";
-            event->accept();
+            event->ignore();
         } else event->ignore();
     } else event->ignore();
 }
@@ -165,7 +172,7 @@ auto SelectionBox::id() const -> int { return m_id; }
 SelectionBox::SelectionBox(int id, QWidget* parent)
     : QWidget{parent}
     , m_id{id}
-    , m_is_highlighted{false}
+    , m_higlighted_status{.is_hovered = false, .is_selected = false}
     , m_is_interacting{false}
     , m_hover_region{HoverRegion::None}
     {

@@ -19,7 +19,16 @@ class SelectionBox: public QWidget, private NonCopyable {
         Top, Bottom, Right, Left,
         TopLeft, TopRight, BottomLeft, BottomRight
     };
-    
+
+    enum class HighlightedType: std::uint8_t {
+        Hovered,
+        Selected,
+    };
+    struct HighlightedStatus {
+        bool is_hovered;
+        bool is_selected;
+    } m_higlighted_status;
+
     [[nodiscard]] auto id() const -> int;
     [[nodiscard]] auto get_selection_rect() const -> const QRect&;
     [[nodiscard]] auto get_hover_region(const QPoint&) const -> HoverRegion;
@@ -28,7 +37,7 @@ signals:
     void editing_finished(int id, const QRect&);
 public slots:
     void set_selection_rect(const QRect& rect);
-    void set_highlighted(bool highlighted);
+    void set_highlighted_status(bool highlighted, HighlightedType);
 public:
     void mousePressEvent(QMouseEvent*)   override;
     void mouseMoveEvent(QMouseEvent*)    override;
@@ -37,7 +46,7 @@ public:
 
 private:
     const int m_id;
-    bool m_is_highlighted;
+
     bool m_is_interacting;
     QRect m_selection_rect;  
     QPoint m_drag_start_pos;

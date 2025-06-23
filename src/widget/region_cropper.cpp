@@ -26,7 +26,10 @@ void RegionCropper::setup_actions() {
 
     am.register_handler(AnnotationAction::DeleteBox, [this]() {
         qDebug() << "Delete box (box id: " << m_selected_box_id << ")"; 
-        remove_selection_box(m_selected_box_id);
+        if (remove_selection_box()) { 
+            qDebug() << "Remove selected box with id: " << m_selected_box_id;
+            m_selected_box_id = -1; // 成功删除后重置 id
+        }
     });
 
     for (auto* action: am.actions_for_category(ActionCategory::Annotation))
@@ -34,29 +37,20 @@ void RegionCropper::setup_actions() {
 
 }
 
-
-
 void RegionCropper::mousePressEvent(QMouseEvent* event) {
     // 鼠标按下时切换 框选状态
     // 鼠标按下时的位置为 初始位置
     if (event->button() == Qt::LeftButton) { // 只响应鼠标左键
-        SelectionBox* clicked_box = nullptr;
-        SelectionBox::HoverRegion hover_region = SelectionBox::HoverRegion::None;
-        
-        for (auto it = m_selection_boxes.constEnd(); it != m_selection_boxes.constBegin(); ) {
-            --it;
-            auto* box = it.value();
-            QPoint box_pos = box->mapFromParent(event->pos());
-            hover_region = box->get_hover_region(box_pos);
-            if (hover_region != SelectionBox::HoverRegion::None) {
-                clicked_box = box;
-                break;
-            }
-        }
+        auto [clicked_box, hover_region] = find_hit_box(event->pos(), MapFrom::Parent);
         
         if (clicked_box) {
+            for (auto* box: m_selection_boxes) box->set_highlighted_status(false, SelectionBox::HighlightedType::Selected);
+
             qDebug() << "Current clicked box id: " << clicked_box->id();
-            clicked_box->raise();
+            // clicked_box->raise();
+            m_selected_box_id = clicked_box->id();
+            qDebug() << "m_selected_box_id: " << m_selected_box_id;
+            clicked_box->set_highlighted_status(true, SelectionBox::HighlightedType::Selected);
             QPointF box_pos = clicked_box->mapFromParent(event->pos());
             QPointF global_pos = clicked_box->mapFromGlobal(box_pos);
             QMouseEvent box_event(
@@ -71,6 +65,7 @@ void RegionCropper::mousePressEvent(QMouseEvent* event) {
             clicked_box->mousePressEvent(&box_event);
             event->accept();
         } else {
+            for (auto* box: m_selection_boxes) box->set_highlighted_status(false, SelectionBox::HighlightedType::Selected);
             m_is_selecting = true;
             m_start_point = event->pos();
             m_current_box_id = m_next_box_id++;
@@ -88,25 +83,29 @@ void RegionCropper::mouseMoveEvent(QMouseEvent* event) {
     emit mouse_moved(event->pos());
     
     using HoverRegion = SelectionBox::HoverRegion;
-    SelectionBox* hover_box = nullptr;
-    HoverRegion hover_region = HoverRegion::None;
+    // SelectionBox* hover_box = nullptr;
+    // HoverRegion hover_region = HoverRegion::None;
 
-    for (auto it = m_selection_boxes.constEnd(); it != m_selection_boxes.constBegin(); ) {
-        --it;
-        SelectionBox* box = it.value();
-        QPoint box_pos = box->mapFromParent(event->pos());
-        SelectionBox::HoverRegion region = box->get_hover_region(box_pos);
-        if (region != SelectionBox::HoverRegion::None) {
-            hover_box = box;
-            hover_region = region;
-            // hover 到的那个选框置顶 
-            box->raise();
+    auto [hover_box, hover_region] = find_hit_box(event->pos(), MapFrom::Parent);
+
+    // for (auto it = m_selection_boxes.constEnd(); it != m_selection_boxes.constBegin(); ) {
+    //     --it;
+    //     SelectionBox* box = it.value();
+    //     QPoint box_pos = box->mapFromParent(event->pos());
+    //     SelectionBox::HoverRegion region = box->get_hover_region(box_pos);
+    //     if (region != SelectionBox::HoverRegion::None) {
+    //         hover_box = box;
+    //         hover_region = region;
+    //         // hover 到的那个选框置顶 
+    //         box->raise();
             
-            break;
-        }
-    }
+    //         break;
+    //     }
+    // }
 
-    for (auto* box: m_selection_boxes) box->set_highlighted(box == hover_box);
+    if (hover_box != nullptr)  hover_box->raise();
+
+    for (auto* box: m_selection_boxes) box->set_highlighted_status(box == hover_box, SelectionBox::HighlightedType::Hovered);
 
     if (hover_box && hover_region != HoverRegion::None) {
          QCursor new_cursor = Qt::ArrowCursor;
@@ -191,8 +190,10 @@ void RegionCropper::resizeEvent(QResizeEvent* event) {
         box->setGeometry(this->rect());
 }
 
-void RegionCropper::remove_selection_box(int id) {
-    if (auto* box = m_selection_boxes.take(id)) delete box;
+bool RegionCropper::remove_selection_box(int id) {
+    if (auto* box = m_selection_boxes.take(id)) { delete box; return true; }
+    
+    return false;
 }
 
 RegionCropper::RegionCropper(QWidget* parent)
@@ -200,6 +201,7 @@ RegionCropper::RegionCropper(QWidget* parent)
     , m_is_selecting{false}
     , m_current_box_id{-1}
     , m_next_box_id(0)
+    , m_selected_box_id{-1}
     {
     setMouseTracking(true);
     setFocusPolicy(Qt::StrongFocus);
@@ -209,9 +211,34 @@ RegionCropper::RegionCropper(QWidget* parent)
 RegionCropper::~RegionCropper() = default;
 
 
+// -------- Region Cropper Helper Functions -------- //
+auto RegionCropper::find_hit_box(const QPoint& pos, MapFrom type) 
+    const -> BoxHitInfo {
+    for ( auto it = m_selection_boxes.constEnd()
+        ; it != m_selection_boxes.constBegin()
+        ; /* No Steps */ ) {
+        --it;
+        auto* box = it.value();
+        QPoint map_pos = {};
+        if (type == MapFrom::Global)     map_pos = box->mapFromGlobal(pos); 
+        else if(type == MapFrom::Parent) map_pos = box->mapFromParent(pos);
 
+        auto region = box->get_hover_region(map_pos);
+        if (region != SelectionBox::HoverRegion::None) 
+            return {.box = box, .region = region};
+    }
+    return {};
+}  
 
+auto RegionCropper::remove_selection_box() -> bool {
+    if (m_selected_box_id == -1) { qDebug() << "No selected box"; return false; }
+    if (auto* box = m_selection_boxes.take(m_selected_box_id)) {
+        delete box;
+        return true; 
+    }
+    return false;
 
+}
 
 
 
