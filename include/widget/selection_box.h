@@ -24,11 +24,12 @@ class SelectionBox: public QWidget, private NonCopyable {
         Hovered,
         Selected,
     };
+private:
     struct HighlightedStatus {
         bool is_hovered;
         bool is_selected;
     } m_higlighted_status;
-
+public:
     [[nodiscard]] auto id() const -> int;
     [[nodiscard]] auto get_selection_rect() const -> const QRect&;
     [[nodiscard]] auto get_hover_region(const QPoint&) const -> HoverRegion;

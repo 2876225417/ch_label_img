@@ -12,6 +12,8 @@
 #include <qvectornd.h>
 #include <qwidget.h>
 
+#define INTERNAL_HELPER
+
 class RegionCropper: public QWidget, private NonCopyable {
     Q_OBJECT
 public:
@@ -51,10 +53,14 @@ private:
     enum class MapFrom: std::uint8_t {
         Parent,
         Global,
+        Local
     };
 
+private INTERNAL_HELPER:  
     [[nodiscard]] auto 
     find_hit_box(const QPoint&, MapFrom) const -> BoxHitInfo;
+
+    auto create_box_mouse_event(QMouseEvent*, SelectionBox*) -> QMouseEvent; 
 
 };
 

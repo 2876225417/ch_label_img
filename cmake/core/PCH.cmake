@@ -1,4 +1,6 @@
-include(${CMAKE_CURRENT_LIST_DIR}/PrettyPrint.cmake)
+include_guard(GLOBAL)
+
+# include(${CMAKE_CURRENT_LIST_DIR}/PrettyPrint.cmake)
 
 
 # 描述: 检查当前工具链是否支持 PCH(一般用在主CMakeLists中)

@@ -1,7 +1,6 @@
+include_guard(GLOBAL)
 
 include(${CMAKE_CURRENT_LIST_DIR}/PrettyPrint.cmake)
-
-
 
 if (NOT DEFINED _MODULE_INFO_INITIALIZED)
     set(_MODULE_INFO_INITIALIZED TRUE CACHE INTERNAL "Module info system initialized")
@@ -10,6 +9,7 @@ if (NOT DEFINED _MODULE_INFO_INITIALIZED)
 else()
     set(CONFIGURED_MODULES "" CACHE INTERNAL "List of configured modules")
 endif()
+
 
 # 用法: module_begin(<module_name>)
 function(module_begin MODULE_NAME)
@@ -20,9 +20,9 @@ function(module_begin MODULE_NAME)
 
     string(LENGTH "====================== Configuring ${MODULE_NAME} Module ======================" HEADER_LENGTH)
     string(REPEAT "=" ${HEADER_LENGTH} SEPARATOR)
-    pretty_message(STATUS "${SEPARATOR}")
-    pretty_message(STATUS "====================== Configuring ${MODULE_NAME} Module ======================")
-    pretty_message(STATUS "${SEPARATOR}")
+    pretty_message(STATUS_LINE "=" ${BANNER_WIDTH})
+    pretty_message(STATUS_BANNER "Configuration ${MODULE_NAME} Module" "=" ${BANNER_WIDTH})
+    pretty_message(STATUS_LINE "=" ${BANNER_WIDTH})
 
     pretty_message(INFO "Module: ${MODULE_NAME}")
     pretty_message(INFO "Location: ${CMAKE_CURRENT_SOURCE_DIR}")
@@ -190,17 +190,15 @@ function(module_end MODULE_NAME TARGET_NAME)
         endif()
     endif()
 
-    string(LENGTH "====================== ${MODULE_NAME} Configuration Complete ======================" FOOTER_LENGTH)
-    string(REPEAT "=" ${FOOTER_LENGTH} SEPARATOR)
-    pretty_message(STATUS "${SEPARATOR}")
+    pretty_message(STATUS_LINE "=" ${BANNER_WIDTH})
     message("")
 endfunction()
 
 # 用法: show_all_modules_summary()
 function(show_all_modules_summary)
-    pretty_message(IMPORTANT "╔════════════════════════════════════════════════════════════════════╗")
-    pretty_message(IMPORTANT "║                        Configuration Summary                       ║")
-    pretty_message(IMPORTANT "╚════════════════════════════════════════════════════════════════════╝")
+    pretty_message(IMPORTANT "=============================================================================")
+    pretty_message(IMPORTANT "============================Configuration Summary============================")
+    pretty_message(IMPORTANT "=============================================================================")
 
     list(LENGTH CONFIGURED_MODULES MODULE_COUNT)
     pretty_message(INFO "Modules configured: ${MODULE_COUNT}")
@@ -220,7 +218,7 @@ function(show_all_modules_summary)
             pretty_message(SUCCESS "  ✓ ${module}")
         endif()
     endforeach()
-    pretty_message(IMPORTANT "══════════════════════════════════════════════════════════════════════")
+    pretty_message(STATUS_LINE "=" ${BANNER_WIDTH})
 endfunction()
 
 # 用法: check_module_dependencies(<module_name> REQUIRES dep1 dep2 ... OPTIONAL opt1 opt2 ...)

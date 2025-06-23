@@ -74,6 +74,8 @@ void SelectionBox::mousePressEvent(QMouseEvent* event) {
             m_drag_start_pos = event->pos();
             m_original_rect = m_selection_rect;
             event->ignore();
+            // 此处不要 accept
+            // 让点击事件继续传递到父组件中
         } else event->ignore();
     } else event->ignore();
 }

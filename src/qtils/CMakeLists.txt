@@ -8,7 +8,7 @@ check_module_dependencies("Qtils"
 # =============== qtils configuration ===============
 file(GLOB QTILS_HEADERS
     "${CMAKE_SOURCE_DIR}/include/qtils/*.h"
-    "${CMAKE_SOURCE_DIR}/include/qtils/*.hpp"
+    # "${CMAKE_SOURCE_DIR}/include/qtils/*.hpp"
 )
 
 file(GLOB QTILS_SOURCES
