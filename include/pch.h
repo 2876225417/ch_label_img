@@ -44,7 +44,12 @@
 #include <exception>
 #include <stdexcept>
 
-// ===== 项目通用工具=====
+// 多线程
+#include <condition_variable>
+#include <thread>
+#include <atomic>
+
+// ===== 项目通用工具 =====
 #include <utils/non-copyable.h>
 #include <utils/singleton.h>
 #include <utils/action_types.h>

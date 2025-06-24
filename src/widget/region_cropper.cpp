@@ -19,6 +19,7 @@
 
 #include <qtils/action_manager.h>
 
+
 void RegionCropper::setup_actions() {
     auto& am = ActionManager::instance();
 

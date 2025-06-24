@@ -22,5 +22,10 @@ protected:
         ClassName() = default; \
         ~ClassName() = default; 
 
+#define MAKE_SINGLETON_NOT_DEFAULT_CTOR_DTOR(ClassName) \
+    friend class Singleton<ClassName>; \
+    private: \
+        ClassName(); \
+        ~ClassName();
 
 #endif // SINGLETON_H

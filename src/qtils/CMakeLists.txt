@@ -8,7 +8,7 @@ check_module_dependencies("Qtils"
 # =============== qtils configuration ===============
 file(GLOB QTILS_HEADERS
     "${CMAKE_SOURCE_DIR}/include/qtils/*.h"
-    # "${CMAKE_SOURCE_DIR}/include/qtils/*.hpp"
+    "${CMAKE_SOURCE_DIR}/include/qtils/*.hpp"
 )
 
 file(GLOB QTILS_SOURCES
@@ -27,11 +27,15 @@ add_library(qtils
 target_include_directories(qtils
     PUBLIC
     ${CMAKE_SOURCE_DIR}/include
+    ${magic_enum_INCLUDE_DIRS}
+    ${fmt_INCLUDE_DIRS}
 )
 
 target_link_libraries(qtils
     PUBLIC
-    Qt6::Widgets    
+    Qt6::Widgets
+    magic_enum::magic_enum
+    fmt::fmt    
 )
 
 auto_enable_pch(qtils qtils)

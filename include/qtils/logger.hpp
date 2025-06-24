@@ -9,11 +9,9 @@
 #include <utility>
 #include <vector>
 
-
-
-
 #include <magic_enum/magic_enum.hpp>
 
+#include <QDebug>
 
 
 #if defined (USE_STD_FMT)
@@ -43,7 +41,7 @@ template <typename... Args>
 using app_format_string = app_format_ns::format_string<Args...>;
 using app_format_ns::make_format_args;
 
-namespace geecodex::native::log::logger {
+namespace labelimg::qtils::logger {
 
 namespace detail {
 template <size_t N>
@@ -329,6 +327,6 @@ auto log( app_format_string<Args...> fmt_str
 }
 
 #endif
-} // namespace geecodex::native::log::logger
+} // namespace labelimg::qtils::logger
 
 #endif // LOGGER_HPP

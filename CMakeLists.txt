@@ -40,9 +40,6 @@ pretty_message(STATUS "")
 
 dependency_manager_init()
 
-
-
-
 find_dependency(fmt REQUIRED)
 find_dependency(magic_enum REQUIRED)
 
@@ -52,11 +49,9 @@ if(Qt6_FOUND)
     pretty_message(STATUS "")
 endif()
 
-
-
 add_subdirectory(${CMAKE_SOURCE_DIR}/src)
 
-
+# pch 配置
 pch_configure()
 setup_project_pch()
 show_pch_stats()

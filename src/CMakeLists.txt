@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/core)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/qtils)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/widget)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/window)
@@ -27,4 +28,5 @@ target_link_libraries(label_img
     window
     page
     qtils
+    core
 )
