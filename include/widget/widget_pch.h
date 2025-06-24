@@ -3,6 +3,9 @@
 
 #include <pch.h>
 
+
+
+
 // ===== Qt GUI 头文件 =====
 #include <QtGui/QImage>
 #include <QtGui/QPixmap>
@@ -35,5 +38,14 @@
 #include <QtWidgets/QGraphicsView>
 #include <QtWidgets/QGraphicsScene>
 #include <QtWidgets/QGraphicsItem>
+
+// 
+#include <QPropertyAnimation>
+#include <QGraphicsOpacityEffect>
+#include <QTimer>
+
+#include <QParallelAnimationGroup>
+#include <QGraphicsDropShadowEffect>
+
 
 #endif // WIDGET_PCH_H

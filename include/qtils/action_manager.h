@@ -2,8 +2,8 @@
 #define ACTION_MANAGER_H
 
 #include "qtils_pch.h"
-#include "utils/action_types.h"
 
+namespace labelimg::qtils::action_manager {
 class ActionManager: public QObject, public Singleton<ActionManager> {
     Q_OBJECT
     MAKE_SINGLETON(ActionManager)
@@ -60,5 +60,6 @@ private:
     QMap<ActionId, QAction*> m_actions;
     QMap<ActionId, std::function<void()>> m_handlers;
 };
+} // namespace labelimg::qtils::action_manager
 
 #endif // ACTION_MANAGER_H

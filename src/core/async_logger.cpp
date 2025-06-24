@@ -1,6 +1,7 @@
 
 #include <core/async_logger.h>
 
+namespace labelimg::core::logger {
 class AsyncLogger::Impl {
 public:
     Impl(): m_done(false) {
@@ -33,7 +34,7 @@ private:
 
 
     std::atomic<bool> m_done;
-    MessageQueue<std::string> m_queue;
+    labelimg::core::queue::MessageQueue<std::string> m_queue;
     std::thread m_worker;
 };
 
@@ -55,3 +56,4 @@ LogStream::~LogStream() {
      m_oss << '\n';
      AsyncLogger::instance().log(m_oss.str());
 }
+} // namespace labelimg::core::logger

@@ -3,6 +3,7 @@
 
 #include <pch.h>
 
+namespace labelimg::core::queue {
 template <typename T>
 class Queue{
 public:
@@ -16,5 +17,6 @@ public:
 protected:
     std::queue<T> m_queue;
 };
+} // namespace labelimg::core::queue
 
 #endif // QUEUE_H

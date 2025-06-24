@@ -36,7 +36,9 @@ target_include_directories(widget
 
 target_link_libraries(widget
     PUBLIC
-    Qt6::Widgets    
+    Qt6::Widgets
+    qtils
+    core    
 )
 
 if (Widget_ENABLE_CUSTOM_STYLES)

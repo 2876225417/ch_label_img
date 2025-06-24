@@ -1,8 +1,6 @@
-#include "utils/action_types.h"
-#include <qaction.h>
-#include <qkeysequence.h>
 #include <qtils/action_manager.h>
 
+namespace labelimg::qtils::action_manager {
 auto ActionManager::create_action( ActionId id
                                  , const QString& text
                                  , const QKeySequence& shortcut
@@ -50,3 +48,4 @@ auto ActionManager::actions_for_category(ActionCategory category)
     }
     return actions;
 }
+} // namespace labelimg::qtils::action_manager

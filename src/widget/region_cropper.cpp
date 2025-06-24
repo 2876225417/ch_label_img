@@ -1,4 +1,5 @@
 #include "utils/action_types.h"
+#include "widget/message_box.h"
 #include "widget/selection_box.h"
 #include <qapplication.h>
 #include <qcolor.h>
@@ -19,8 +20,10 @@
 
 #include <qtils/action_manager.h>
 
+#include <qtils/logger.hpp>
 
 void RegionCropper::setup_actions() {
+    using namespace labelimg::qtils::action_manager;
     auto& am = ActionManager::instance();
 
     am.create_action(AnnotationAction::DeleteBox, tr("Delete Selection Box"), QKeySequence(Qt::Key_Delete), tr("Delete the selected annotation box"));
@@ -127,6 +130,9 @@ void RegionCropper::mouseReleaseEvent(QMouseEvent* event) {
                 ) emit region_selected(box->geometry());
                 else remove_selection_box(m_current_box_id);
             }
+            using namespace labelimg::qtils::logger;
+            logg<LogLevel::INFO>("Mouse Released");
+            
             event->accept();
         } else {
             for (auto it = m_selection_boxes.constEnd(); it != m_selection_boxes.constBegin(); ) {
@@ -149,35 +155,11 @@ void RegionCropper::resizeEvent(QResizeEvent* event) {
         box->setGeometry(this->rect());
 }
 
-bool RegionCropper::remove_selection_box(int id) {
+auto RegionCropper::remove_selection_box(int id) -> bool {
     if (auto* box = m_selection_boxes.take(id)) { delete box; return true; }
-    
     return false;
 }
 
-
-// -------- Region Cropper Helper Functions -------- //
-auto RegionCropper::find_hit_box(const QPoint& pos, MapFrom type)
-    // 这个 hover 选框的实现有点小问题
-    // 因为 for 是从最近创建的选框往前进行遍历的
-    // 导致当有两个选框重叠时，尽管之前创建的选框在最新创建的选框之上
-    // 最终 hover 的选框也是最新的那个一个选框 
-    const -> BoxHitInfo {
-    for ( auto it = m_selection_boxes.constEnd()
-        ; it != m_selection_boxes.constBegin()
-        ; /* No Steps */ ) {
-        --it;
-        auto* box = it.value();
-        QPoint map_pos = {};
-        if (type == MapFrom::Global)     map_pos = box->mapFromGlobal(pos); 
-        else if(type == MapFrom::Parent) map_pos = box->mapFromParent(pos);
-
-        auto region = box->get_hover_region(map_pos);
-        if (region != SelectionBox::HoverRegion::None) 
-            return {.box = box, .region = region};
-    }
-    return {};
-}  
 
 auto RegionCropper::remove_selection_box() -> bool {
     if (m_selected_box_id == -1) { qDebug() << "No selected box"; return false; }
@@ -187,24 +169,6 @@ auto RegionCropper::remove_selection_box() -> bool {
     }
     return false;
 }
-
-auto RegionCropper::RegionCropper::create_box_mouse_event(QMouseEvent* event, SelectionBox* box) 
-    -> QMouseEvent {
-    QPointF box_pos = box->mapFromParent(event->pos());
-    QPointF global_pos = box->mapFromGlobal(box_pos);
-    return {
-        event->type(),
-        box_pos,
-        global_pos,
-        event->button(),
-        event->buttons(),
-        event->modifiers(),
-        event->pointingDevice()
-    };
-}
-
-// ------------------------------------------------- //
-
 
 RegionCropper::RegionCropper(QWidget* parent)
     : QWidget{parent}
@@ -216,6 +180,9 @@ RegionCropper::RegionCropper(QWidget* parent)
     setMouseTracking(true);
     setFocusPolicy(Qt::StrongFocus);
     setup_actions();
+
+
+
 }
 
 RegionCropper::~RegionCropper() = default;

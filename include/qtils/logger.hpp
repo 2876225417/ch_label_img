@@ -1,18 +1,11 @@
 #ifndef LOGGER_HPP
 #define LOGGER_HPP
 
-#include <cstdint>
-#include <iostream>
-#include <string>
-#include <string_view>
-#include <type_traits>
-#include <utility>
-#include <vector>
-
+#include "qtils_pch.h"
 #include <magic_enum/magic_enum.hpp>
 
 #include <QDebug>
-
+#include <core/async_logger.h>
 
 #if defined (USE_STD_FMT)
 #include <format>
@@ -20,7 +13,7 @@ namespace app_format_ns = std;
 template <typename... Args>
 using app_format_string = std::format_string<Args...>;
 template <typename... Args>
-auto make_format_args(Args&&... args) {
+auto app_make_format_args(Args&&... args) -> decltype(std::make_format_args(std::forward<Args>(args)...)){
     return std::make_format_args(std::forward<Args>(args)...);
 }
 #elif defined (USE_EXTERNAL_FMT)
@@ -30,16 +23,12 @@ namespace app_format_ns = fmt;
 template <typename... Args>
 using app_format_string = fmt::format_string<Args...>;
 template <typename... Args>
-auto make_format_args(Args&&... args) {
+auto app_make_format_args(Args&&... args) -> decltype(fmt::make_format_args(std::forward<Args>(args)...)){
     return fmt::make_format_args(std::forward<Args>(args)...);
 }
 #else
 #error "Required std::fmt or fmt for format output."
 #endif
-
-template <typename... Args>
-using app_format_string = app_format_ns::format_string<Args...>;
-using app_format_ns::make_format_args;
 
 namespace labelimg::qtils::logger {
 
@@ -127,7 +116,6 @@ consteval auto to_string() {
     }
 }
 
-
 consteval auto build_style_string() { return fixed_string(""); }
 
 template <auto Head, auto... Tail>
@@ -194,7 +182,6 @@ consteval auto apply() {
         return detail::fixed_string("\x1b[") + style_codes + detail::fixed_string("m");
     }
 }
-
 
 template <PresetStyle Preset>
 consteval auto get_preset_style_code() noexcept {
@@ -283,7 +270,8 @@ template <LogLevel level>
 struct log_level_traits {
 private:
     static constexpr auto 
-    generate_tag() { /* 如 [SUCCESS] */
+    generate_tag() { /* 如 [SUCCESS]       | Message    */
+                     /*   [INFO]          | Message    */
         constexpr auto name_sv = magic_enum::enum_name<level>();
         constexpr size_t name_sv_len = name_sv.size();
 
@@ -297,10 +285,17 @@ private:
 
         detail::fixed_string<1> left_bracket = std::string_view("[");
         detail::fixed_string<1> right_bracket = std::string_view("]");
+
+        constexpr std::string_view spaces("            ");
+
         // 从 12 个空格中取出对应数量的空格
-        detail::fixed_string<padding_size> padding(std::string_view("            ", padding_size));
-        
-        return left_bracket + processed_name + right_bracket + padding;
+        detail::fixed_string<padding_size> padding(std::string_view(spaces.data(), padding_size));
+        detail::fixed_string<1> divider(std::string_view("|"));
+        constexpr size_t divider_padding_size = 3;
+        detail::fixed_string<divider_padding_size> divider_padding(std::string_view(spaces.data(), divider_padding_size));
+
+
+        return left_bracket + processed_name + right_bracket + padding + divider + divider_padding;
     }
     static constexpr auto generate_tag_object = generate_tag();
 public:
@@ -310,20 +305,20 @@ public:
     };
 };
 
-
 template<LogLevel level, typename... Args>
-auto log( app_format_string<Args...> fmt_str
-        , Args&&... args) -> LoggerRetType
-        {
+auto logg( app_format_string<Args...> fmt_str
+         , Args&&... args) -> LoggerRetType
+         {
     constexpr auto style = log_level_traits<level>::value.style_;
     constexpr auto tag   = log_level_traits<level>::value.tag_;
     
-    std::cout << console_style::get_preset_style_code<style>().c_str() << tag
-              << console_style::get_preset_style_code<console_style::PresetStyle::C_RESET>().c_str()
-              << app_format_ns::vformat(fmt_str.get(), make_format_args(std::forward<Args>(args)...))
-              << std::endl;
-
+    using namespace labelimg::core::logger;
+    LOG << console_style::get_preset_style_code<style>().c_str() << tag
+        << console_style::get_preset_style_code<console_style::PresetStyle::C_RESET>().c_str()
+        << app_format_ns::vformat(fmt_str.get(), app_make_format_args(std::forward<Args>(args)...));
+    #ifdef BUILD_TESTS
     if constexpr (is_test_build) return true;
+    #endif
 }
 
 #endif

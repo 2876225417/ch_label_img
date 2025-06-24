@@ -2,6 +2,7 @@
 #define ASYNC_LOGGER_H
 
 #include <core/message_queue.hpp>
+namespace labelimg::core::logger {
 
 class LogStream: private NonCopyable  {
 public:
@@ -31,4 +32,5 @@ private:
     std::unique_ptr<Impl> pimpl;
 };
 
+} // namespace labelimg::core::logger
 #endif // ASYNC_LOGGER_H

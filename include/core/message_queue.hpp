@@ -3,6 +3,7 @@
 
 #include <core/queue.h>
 
+namespace labelimg::core::queue {
 template <typename T>
 class MessageQueue: public Queue<T>, private NonCopyable{
 public:
@@ -14,7 +15,7 @@ public:
     
     void push(T) override;
     auto empty() const -> bool;
-    auto size() const -> size_t;
+    auto size()  const -> size_t;
 private:    
     mutable std::mutex m_mutex;
     std::condition_variable m_cond;
@@ -60,5 +61,5 @@ auto MessageQueue<T>::size() const -> size_t  {
     return Queue<T>::m_queue.size();
 }
 
-
+} // namespace labelimg::core::queue
 #endif // MESSAGE_QUEUE_H
