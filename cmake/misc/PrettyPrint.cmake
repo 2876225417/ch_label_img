@@ -8,15 +8,15 @@ option(USE_CPP_COLORED_DEBUG_OUTPUT "Enable colored messages in Debug output for
 option(ENABLE_EXTERNAL_FMT          "Enable external {fmt} (even though std fmt is available)" ON)
 option(MESSAGE_PADDED               "Enable padded to align prefixes for pretty message"       ON)
 
-set(_PRETTY_MESSAGE_MAX_LENGTH 80)
+set(_PRETTY_MESSAGE_MAX_LENGTH 105  CACHE STRING "Max message length for pretty_message"                         FORCE)
+set(BANNER_WIDTH               80 CACHE STRING "Banner width affecting all pretty_message with banner or title" FORCE)
+set(PRETTY_KV_ALIGN_COLUMN     40  CACHE STRING "The column where values start in pretty_message"               FORCE)
 
 # 使用 string(ASCII <n>) 生成字符以解决 “/0” 无效转义序列问题
 string(ASCII 27 ESC) # ESC: 
                      #   ASCII Code: 27
                      #   HEX:        0x1B
                      #   OCT:        033
-
-
                      
 # --- ANSI 颜色代码定义 ----
 if (USE_CMAKE_COLORED_MESSAGES AND (NOT WIN32 OR CMAKE_GENERATOR STREQUAL "Ninja" OR CMAKE_COLOR_MAKEFILE))
@@ -87,6 +87,7 @@ function(_pretty_message_create_line char length output_var)
     set(${output_var} "${line}" PARENT_SCOPE)
 endfunction()
 
+# 标题行
 function(_pretty_message_create_banner title char length output_var)
     set(content " ${title} ")
     string(LENGTH "${content}" content_len)
@@ -106,6 +107,28 @@ function(_pretty_message_create_banner title char length output_var)
     set(banner "${left_str}${content}${right_str}")
     set(${output_var} "${banner}" PARENT_SCOPE)
 endfunction()
+
+# 输出项目构建配置中的变量
+# 用法: pretty_message_kv(<TYPE> <变量名> <变量值>) 
+function(pretty_message_kv TYPE KEY VALUE)
+    set(key_part "  ${SYM_POINT_R} ${KEY}")
+
+    string(LENGTH "${key_part}" key_len)
+
+    math(EXPR padding_len "${PRETTY_KV_ALIGN_COLUMN} - ${key_len}")
+
+    if (padding_len LESS 0)
+        set(padding_len 1)
+    endif()
+
+    set(_SPACES "                                                                  ")
+    string(SUBSTRING "${_SPACES}" 0 ${padding_len} padding_spaces)
+
+    set(aligned_message "${key_part}:${padding_spaces}${VALUE}")
+
+    pretty_message(${TYPE} "${aligned_message}")
+endfunction()
+
 
 
 # --- 自定义消息函数 ---
@@ -184,6 +207,8 @@ function(pretty_message TYPE MESSAGE)
             set(COLOR   "${C_B_GREEN}")
         elseif (${TYPE} STREQUAL "OPTIONAL")
             set(COLOR   "${C_YELLOW}")
+        elseif (${TYPE} STREQUAL "TIP")
+            set(COLOR   "${C_MAGENTA}")
         elseif (${TYPE} STREQUAL "WARNING")
             set(COLOR   "${C_B_YELLOW}")
             set(MSG_CMD "WARNING")
@@ -287,9 +312,13 @@ endif()
 function(print_pretty_debug_info)
     pretty_message(DEBUG "PrettyPrint.cmake module loaded.")
     pretty_message(VINFO_BANNER "Pretty Message Info" "=" ${BANNER_WIDTH})
-    pretty_message(VINFO "  USE_CMAKE_COLORED_MESSAGES:     ${USE_CMAKE_COLORED_MESSAGES} ")
-    pretty_message(VINFO "  USE_CPP_COLORED_DEBUG_OUTPUT:   ${USE_CPP_COLORED_DEBUG_OUTPUT} ")
-    pretty_message(VINFO "  ENABLE_EXTERNAL_FMT:            ${ENABLE_EXTERNAL_FMT}")
+    pretty_message_kv(VINFO "USE_CMAKE_COLORED_MESSAGES"      "${USE_CMAKE_COLORED_MESSAGES} ")
+    pretty_message_kv(VINFO "USE_CPP_COLORED_DEBUG_OUTPUT"    "${USE_CPP_COLORED_DEBUG_OUTPUT} ")
+    pretty_message_kv(VINFO "ENABLE_EXTERNAL_FMT"             "${ENABLE_EXTERNAL_FMT}")
+    pretty_message_kv(VINFO "PRETTY_MESSAGE_MAX_LENGTH"       "${_PRETTY_MESSAGE_MAX_LENGTH}")
+    pretty_message_kv(VINFO "BANNER_WIDTH"                    "${BANNER_WIDTH}")    
+    pretty_message_kv(VINFO "PRETTY_KV_ALIGN_COLUMN"          "${PRETTY_KV_ALIGN_COLUMN}")
+    pretty_message_kv(VINFO "PRETTY_PRINT_USE_ASCII_FALLBACK" "${PRETTY_PRINT_USE_ASCII_FALLBACK}")
     if (NOT ENABLE_EXTERNAL_FMT)
     pretty_message(VINFO "  HAVE_STD_FORMAT:                ${HAVE_STD_FORMAT}")
     endif()
