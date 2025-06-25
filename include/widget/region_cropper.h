@@ -3,6 +3,7 @@
 
 #include "utils/method_concepts.h"
 #include "utils/non-copyable.h"
+#include "widget/image_file_item.h"
 #include "widget/selection_box.h"
 #include <QPoint>
 #include <QRect>
@@ -37,6 +38,7 @@ private:
     int    m_current_box_id;  // 当前框选框的 id
     int    m_next_box_id;     // 下一个框选框的 id
     int    m_selected_box_id; // 当前选中的选框 id
+    
 
     QMap<int, SelectionBox*> m_selection_boxes;
 

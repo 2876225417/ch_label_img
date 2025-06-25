@@ -10,6 +10,10 @@ concept InternalHelper = true;
 template <typename T>
 concept EventHelper = InternalHelper<T>;
 
+
+
+
+
 template <typename T>
 concept PureHelper = InternalHelper<T>;
 

@@ -48,4 +48,9 @@
 #include <QGraphicsDropShadowEffect>
 
 
+#include <QFileInfo>
+#include <QPixmapCache>
+#include <QImageReader>
+#include <QDir>
+
 #endif // WIDGET_PCH_H

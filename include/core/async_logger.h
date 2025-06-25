@@ -18,7 +18,7 @@ private:
     std::ostringstream m_oss;
 };
 
-#define LOG LogStream()
+#define async_log LogStream()
 
 class AsyncLogger: private Singleton<AsyncLogger> {
     MAKE_SINGLETON_NOT_DEFAULT_CTOR_DTOR(AsyncLogger)

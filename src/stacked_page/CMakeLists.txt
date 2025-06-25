@@ -34,6 +34,7 @@ target_include_directories(page
 target_link_libraries(page
     PUBLIC
     Qt6::Widgets    
+
 )
 
 auto_enable_pch(page stacked_page)

@@ -30,6 +30,10 @@ auto app_make_format_args(Args&&... args) -> decltype(fmt::make_format_args(std:
 #error "Required std::fmt or fmt for format output."
 #endif
 
+template <typename... Args>
+using app_format_string = app_format_ns::format_string<Args...>;
+using app_format_ns::make_format_args;
+
 namespace labelimg::qtils::logger {
 
 namespace detail {
@@ -61,8 +65,8 @@ struct fixed_string {
         for (size_t i = 0; i < N; ++i) 
             result.data_[i] = this->data_[i];
         // Copy fixed_string<M>
-        for (size_t i = 0; i < M: ++i) 
-            result.data_[i + N] = other->data_[i];
+        for (size_t i = 0; i < M; ++i) 
+            result.data_[i + N] = other.data_[i];
         return result;
     } 
 #else
@@ -313,9 +317,9 @@ auto logg( app_format_string<Args...> fmt_str
     constexpr auto tag   = log_level_traits<level>::value.tag_;
     
     using namespace labelimg::core::logger;
-    LOG << console_style::get_preset_style_code<style>().c_str() << tag
-        << console_style::get_preset_style_code<console_style::PresetStyle::C_RESET>().c_str()
-        << app_format_ns::vformat(fmt_str.get(), app_make_format_args(std::forward<Args>(args)...));
+    async_log << console_style::get_preset_style_code<style>().c_str() << tag
+              << console_style::get_preset_style_code<console_style::PresetStyle::C_RESET>().c_str()
+              << app_format_ns::vformat(fmt_str.get(), app_make_format_args(std::forward<Args>(args)...));
     #ifdef BUILD_TESTS
     if constexpr (is_test_build) return true;
     #endif

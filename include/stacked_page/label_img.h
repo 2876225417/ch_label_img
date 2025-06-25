@@ -2,6 +2,8 @@
 #define LABEL_IMG_PAGE
 
 #include "stacked_page/base_page.h"
+#include "widget/image_file_item.h"
+#include "widget/image_file_list.h"
 #include "widget/labeling_canvas.h"
 
 
@@ -18,6 +20,7 @@ private:
 
 
     LabelingCanvas* m_canvas;
+    ImageFileList* m_image_file_list;
 };
 
 #endif // LABEL_IMG_PAGE

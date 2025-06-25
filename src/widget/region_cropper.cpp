@@ -177,6 +177,9 @@ RegionCropper::RegionCropper(QWidget* parent)
     , m_next_box_id(0)
     , m_selected_box_id{-1}
     {
+
+
+        
     setMouseTracking(true);
     setFocusPolicy(Qt::StrongFocus);
     setup_actions();
