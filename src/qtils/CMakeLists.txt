@@ -38,6 +38,11 @@ target_link_libraries(qtils
     fmt::fmt    
 )
 
+target_compile_definitions(qtils
+    PRIVATE
+    "TERM_OUTPUT_MESSAGE_MAX_LENGTH=${_PRETTY_MESSAGE_MAX_LENGTH}"
+)
+
 auto_enable_pch(qtils qtils)
 
 set_target_properties(qtils PROPERTIES

@@ -2,37 +2,27 @@
 #define LOGGER_HPP
 
 #include "qtils_pch.h"
+#include "utils/method_concepts.h"
+#include <fmt/base.h>
 #include <magic_enum/magic_enum.hpp>
 
 #include <QDebug>
 #include <core/async_logger.h>
+#include <tuple>
 
 #if defined (USE_STD_FMT)
 #include <format>
 namespace app_format_ns = std;
-template <typename... Args>
-using app_format_string = std::format_string<Args...>;
-template <typename... Args>
-auto app_make_format_args(Args&&... args) -> decltype(std::make_format_args(std::forward<Args>(args)...)){
-    return std::make_format_args(std::forward<Args>(args)...);
-}
 #elif defined (USE_EXTERNAL_FMT)
 #include <fmt/core.h>
 #include <fmt/format.h>
 namespace app_format_ns = fmt;
-template <typename... Args>
-using app_format_string = fmt::format_string<Args...>;
-template <typename... Args>
-auto app_make_format_args(Args&&... args) -> decltype(fmt::make_format_args(std::forward<Args>(args)...)){
-    return fmt::make_format_args(std::forward<Args>(args)...);
-}
 #else
 #error "Required std::fmt or fmt for format output."
 #endif
 
 template <typename... Args>
 using app_format_string = app_format_ns::format_string<Args...>;
-using app_format_ns::make_format_args;
 
 namespace labelimg::qtils::logger {
 
@@ -132,6 +122,54 @@ consteval auto build_style_string() {
     else
         return head_str;
 }
+
+// 计算 ASCII 和 Unicode 字符的个数
+[[nodiscard]] inline auto 
+get_visual_width(std::string_view str) -> size_t {
+    size_t byte_len = str.length();
+    size_t num_unicode_chars = 0;
+    for (size_t i = 0; i < byte_len; ) {
+        if ((str[i] & 0x80) == 0) // ASCII 
+            i += 1; 
+        else {  // 多字节字符
+            num_unicode_chars++;
+            if      ((str[i] & 0xE0) == 0xC0) i += 2;
+            else if ((str[i] & 0xF0) == 0xE0) i += 3;
+            else if ((str[i] & 0xF8) == 0XF0) i += 4;
+            else/* 对于非 UTF-8 字符的回滚处理 */ i += 1;
+        }
+    }
+    return (byte_len - num_unicode_chars * 2);
+}
+
+[[nodiscard]] inline auto 
+split_string_by_width(std::string_view str, size_t max_width) 
+-> decltype(auto) {
+    std::vector<std::string> lines;
+
+    // 提前检测
+    if ((str.empty())) {
+        lines.emplace_back("");
+        return lines;
+    }
+
+    size_t current_pos = 0;
+    while (current_pos < str.length()) {
+        lines.emplace_back(str.substr(current_pos, max_width));
+        current_pos += max_width;
+    }
+
+    return lines;
+}
+
+[[nodiscard]] inline auto
+create_indent_from(std::string_view reference_str) 
+-> decltype(auto) {
+    size_t width = get_visual_width(reference_str);
+    return std::string(width, ' ');
+};
+
+
 } // namespace detail
 
 
@@ -309,21 +347,68 @@ public:
     };
 };
 
+
+template <typename T>
+struct fmt_arg_type { using type = T; };
+
+template <>
+struct fmt_arg_type<QString> { using type = std::string; };
+
+template <typename T>
+using fmt_arg_type_t = typename fmt_arg_type<std::decay_t<T>>::type;
+
+template <typename T>
+[[nodiscard]] auto transform_arg_for_fmt(T&& arg) {
+    using DecayedT = std::decay_t<T>;
+    
+    if constexpr (std::is_same_v<DecayedT, QString>) {
+        return arg.toStdString();
+    } else {
+        return std::forward<T>(arg);
+    }
+}
+
 template<LogLevel level, typename... Args>
-auto logg( app_format_string<Args...> fmt_str
-         , Args&&... args) -> LoggerRetType
-         {
+auto logg( app_format_string<fmt_arg_type_t<Args>...> fmt_str
+         , Args&&... args
+         ) -> decltype(auto) {
     constexpr auto style = log_level_traits<level>::value.style_;
     constexpr auto tag   = log_level_traits<level>::value.tag_;
     
+    std::string formatted_message = app_format_ns::format(
+        fmt_str, 
+        transform_arg_for_fmt(std::forward<Args>(args))...
+    );
+    
+#if defined(TERM_OUTPUT_MESSAGE_MAX_LENGTH)
+    constexpr size_t MAX_LINE_WIDTH = TERM_OUTPUT_MESSAGE_MAX_LENGTH;
+#else
+    constexpr size_t MAX_LINE_WIDTH = 80;
+#endif
+
+    auto lines = detail::split_string_by_width(formatted_message, MAX_LINE_WIDTH);
+
     using namespace labelimg::core::logger;
-    async_log << console_style::get_preset_style_code<style>().c_str() << tag
-              << console_style::get_preset_style_code<console_style::PresetStyle::C_RESET>().c_str()
-              << app_format_ns::vformat(fmt_str.get(), app_make_format_args(std::forward<Args>(args)...));
-    #ifdef BUILD_TESTS
-    if constexpr (is_test_build) return true;
-    #endif
+
+    if (!lines.empty())
+        async_log << console_style::get_preset_style_code<style>().c_str() << tag
+                  << console_style::get_preset_style_code<console_style::PresetStyle::C_RESET>().c_str()
+                  << lines[0];
+    
+    if (lines.size() > 1) {
+        std::string indent = detail::create_indent_from(tag);
+        for (size_t i = 1; i < lines.size(); ++i)     
+                async_log << console_style::get_preset_style_code<style>().c_str() << indent
+                  << console_style::get_preset_style_code<console_style::PresetStyle::C_RESET>().c_str()
+                  << lines[i];
+    }
+
+
+    if constexpr (is_test_build) 
+        return static_cast<LoggerRetType>(LoggerRetType(true));
 }
+
+
 
 #endif
 } // namespace labelimg::qtils::logger

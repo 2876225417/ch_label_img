@@ -10,10 +10,6 @@ concept InternalHelper = true;
 template <typename T>
 concept EventHelper = InternalHelper<T>;
 
-
-
-
-
 template <typename T>
 concept PureHelper = InternalHelper<T>;
 
@@ -21,6 +17,11 @@ template <typename T>
 concept ContextDependentHelper = InternalHelper<T>;
 
 
+template <typename T>
+concept QtilsFunc = true;
+
+template <typename T>
+concept QtilsExportFunc = QtilsFunc<T>;
 
 #endif // __cplusplus >= 202002L
 
