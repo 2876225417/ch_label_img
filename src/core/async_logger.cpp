@@ -1,7 +1,9 @@
 
 #include <core/async_logger.h>
+#include "core/message_queue.hpp"
 
 namespace labelimg::core::logger {
+namespace v1 {
 class AsyncLogger::Impl {
 public:
     Impl(): m_done(false) {
@@ -34,7 +36,7 @@ private:
 
 
     std::atomic<bool> m_done;
-    labelimg::core::queue::MessageQueue<std::string> m_queue;
+    labelimg::core::queue::v1::MessageQueue<std::string> m_queue;
     std::thread m_worker;
 };
 
@@ -49,11 +51,13 @@ AsyncLogger::~AsyncLogger() = default;
 void AsyncLogger::log(std::string message) {
     pimpl->log(std::move(message));
 }
+}  // namespace v1
 
 LogStream::LogStream() = default;
 
 LogStream::~LogStream() {
      m_oss << '\n';
-     AsyncLogger::instance().log(m_oss.str());
+     AsyncLogger<queue::MutexPolicy>::instance().log_impl(m_oss.str());
 }
+
 } // namespace labelimg::core::logger

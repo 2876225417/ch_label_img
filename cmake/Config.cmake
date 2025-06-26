@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
 
-
 list(APPEND CMAKE_MODULE_PATH
     "${CMAKE_CURRENT_LIST_DIR}"
     "${CMAKE_CURRENT_LIST_DIR}/core"
@@ -14,6 +13,7 @@ list(APPEND CMAKE_MODULE_PATH
 include(PrettyPrint)
 
 # core
+include(ProjectVerbose)
 include(ProjectInfo)
 include(PCH)
 
@@ -24,7 +24,6 @@ include(DependencyManager)
 include(ModuleInfo)
 
 include(QtInfo)
-
 
 
 
