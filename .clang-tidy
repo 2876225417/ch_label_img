@@ -4,10 +4,13 @@ Checks: >
     bugprone-*,
     cert-*,
     cppcoreguidelines-*,
-    goole-*,
+    google-*,
     llvm-*,
     misc-*,
     modernize-*,
     performance-*,
-    protablity-*,
-    readablitiy-*,
+    protability-*,
+    readabilitiy-*,
+
+
+HeaderFilterRegex: ".*"

@@ -9,8 +9,6 @@
 #endif
 
 
-
-
 namespace labelimg::utils{
 
 template <typename T = void>

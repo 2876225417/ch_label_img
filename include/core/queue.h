@@ -5,7 +5,8 @@
 
 namespace labelimg::core::queue {
 template <typename T>
-class Queue{
+class [[deprecated("The 'Queue' class template is deprecated. Please consider a CRTP base 'Queue' class template.")]]
+Queue{
 public:
     virtual ~Queue() = default;
 
