@@ -38,7 +38,7 @@ target_link_libraries(widget
     PUBLIC
     Qt6::Widgets
     qtils
-    core    
+    core
 )
 
 if (Widget_ENABLE_CUSTOM_STYLES)

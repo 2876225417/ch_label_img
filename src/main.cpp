@@ -9,10 +9,14 @@
 
 #include <qtils/logger.hpp>
 
+
+
 auto main(int argc, char* argv[]) -> int {
     QApplication app(argc, argv);
 
-    app_launch();
+    labelimg::utils::app_launch();
+
+
 
     auto mainwindow = new MainWindow{};
     mainwindow->show();

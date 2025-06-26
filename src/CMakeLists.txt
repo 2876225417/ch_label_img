@@ -5,6 +5,8 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/qtils)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/widget)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/window)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/stacked_page)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/utils)
+
 
 file(GLOB_RECURSE PROJECT_HEADERS
     ${CMAKE_SOURCE_DIR}/include
@@ -29,4 +31,5 @@ target_link_libraries(label_img
     page
     qtils
     core
+    proj_config
 )

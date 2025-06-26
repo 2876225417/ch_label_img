@@ -37,6 +37,8 @@ pretty_message(VINFO_LINE "=" ${BANNER_WIDTH})
 pretty_message(STATUS "")
 print_pretty_debug_info()
 pretty_message(STATUS "")
+print_project_info_debug_info()
+pretty_message(STATUS "")
 
 dependency_manager_init()
 
@@ -55,5 +57,4 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/src)
 pch_configure()
 setup_project_pch()
 show_pch_stats()
-
 show_all_modules_summary()

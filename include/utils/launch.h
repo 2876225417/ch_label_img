@@ -2,39 +2,20 @@
 #define LAUNCH_H
 
 
-#include "qtils/logger.hpp"
-#include <array>
 #include <core/async_logger.h>
 
-#include <QString>
+#ifdef EXPORT_PROJ_INFO
+#include "proj_config.h"
+#endif
+
+
+
 
 namespace labelimg::utils{
 
 template <typename T = void>
 void app_launch() {
     using namespace labelimg::core::logger;
-
-
-#if defined (PROJECT_VERSION_MAJOR) 
-    auto VERSION_MAJOR = PROJECT_VERSION_MAJOR;
-#else
-    auto VERSION_MAJOR = "UNKNOWN";
-#endif
-
-#if defined (PROJECT_VERSION_MINOR) 
-    auto VERSION_MINOR = PROJECT_VERSION_MINOR;
-#else
-    auto VERSION_MINOR = "UNKNOWN";
-#endif
-
-#if defined (PROJECT_VERSION_PATCH) 
-    auto VERSION_PATCH = PROJECT_VERSION_PATCH;
-#else
-    auto VERSION_PATCH = "UNKNOWN";
-#endif
-
-#endif
-
 
     auto* line_0("██████╗ ██████╗  ██████╗ ██╗    ██╗ ██████╗  ██████╗  ██████╗ ");
     auto* line_1("██╔══██╗██╔══██╗██╔═══██╗██║    ██║██╔═══██╗██╔═══██╗██╔═══██╗");
@@ -54,11 +35,13 @@ void app_launch() {
               << "\t\t" << "|\t" << line_5 << "\t\t|" << '\n'
               << "\t\t" << "|\t" << "\t\t\t\t\t\t\t"  << "\t\t|" << '\n'
               << "\t\t" << "|\t" << "\t\t\t\t\t\t\t"  << "\t\t|" << '\n'
-              << "\t\t" << "|\t" << "                        Project: Labelimg                     " << "\t\t|" << '\n'
-              << "\t\t" << "|\t" << "                        Version: " << VERSION_MAJOR << "." 
-                                                                          << VERSION_MINOR << "." 
-                                                                          << VERSION_PATCH << "\t\t\t\t\t|"      << '\n'
-              << "\t\t\t" << "=================================================================================" << '\n'
+              #ifdef EXPORT_PROJ_INFO
+              << "\t\t" << "|\t" << "                        Project: "   << PROJECT_NAME          << "\t\t\t\t|" << '\n'
+              << "\t\t" << "|\t" << "                        Version: "   << PROJECT_VERSION_MAJOR << "." 
+                                                                          << PROJECT_VERSION_MINOR << "." 
+                                                                          << PROJECT_VERSION_PATCH << "\t\t\t\t\t|" << '\n'
+              #endif 
+              << "\t\t" << "=================================================================================" << '\n'
               << "\n";
 }
 } // namespace labelimg::utils
