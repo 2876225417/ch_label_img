@@ -21,7 +21,6 @@ public:
         m_queue.push(std::move(message));
     }
 
-
 private:
     void worker_thread_func() {
         while (!m_done) {
@@ -33,7 +32,6 @@ private:
             std::cout << message;
         }
     }
-
 
     std::atomic<bool> m_done;
     labelimg::core::queue::v1::MessageQueue<std::string> m_queue;
@@ -57,7 +55,7 @@ LogStream::LogStream() = default;
 
 LogStream::~LogStream() {
      m_oss << '\n';
-     AsyncLogger<queue::MutexPolicy>::instance().log_impl(m_oss.str());
+     AsyncLogger<queue::CoroutinePolicy>::instance().log_impl(m_oss.str());
 }
 
 } // namespace labelimg::core::logger

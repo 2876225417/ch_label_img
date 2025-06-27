@@ -64,10 +64,13 @@ auto MessageQueue<T>::size() const -> size_t  {
 } // namespace v1
 
 inline namespace v2 {
+template <typename P>
+concept IsTagPolicy = std::is_empty_v<P> && std::is_default_constructible_v<P>;
+
 struct MutexPolicy {};
 struct CoroutinePolicy {};
 
-template <typename T, typename ConcurrencyPolicy = MutexPolicy>
+template <typename T, IsTagPolicy ConcurrencyPolicy = MutexPolicy>
 class MessageQueue;
 
 template <typename T>
