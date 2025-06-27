@@ -29,6 +29,9 @@ target_include_directories(core
 
 target_link_libraries(core
     PUBLIC
+    magic_enum::magic_enum
+    fmt::fmt    
+    Qt6::Widgets
 )
 
 auto_enable_pch(core core)
