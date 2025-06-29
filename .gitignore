@@ -34,6 +34,13 @@
 build
 .cache
 
-3rdparty
+3rdparty/build/
+3rdparty/fmt/
+3rdparty/logs/
+3rdparty/magic_enum/
+3rdparty/libpqxx/
+3rdparty/spdlog/
 
-Doxyfile
+3rdparty/source/
+
+
