@@ -4,6 +4,7 @@
 #include "core/formatter/reflection.h"
 #include <chrono>
 #include <cstddef>
+#include <cstdint>
 #include <string_view>
 #include <tuple>
 #include <type_traits>
@@ -277,8 +278,6 @@ get_class_name(const char* pretty_function = __PRETTY_FUNCTION__) {
 
 #define FULL_FUNCTION_INFO() \
     get_caller_info(__FILE__, __LINE__, __PRETTY_FUNCTION__);
-
-
 
 struct FunctionTracer {
     FunctionInfo info;

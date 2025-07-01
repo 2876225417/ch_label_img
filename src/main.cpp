@@ -8,7 +8,7 @@
 #include <array>
 #include <cstdlib>
 #include <window/mainwindow.h>
-
+#include <core/asm/hp_timer.hpp>
 #include <qtils/logger.hpp>
 
 auto main(int argc, char* argv[]) -> int {
@@ -19,6 +19,8 @@ auto main(int argc, char* argv[]) -> int {
     labelimg::core::formatter::function::FunctionInfo i;
 
     labelimg::core::formatter::function::get_caller_info_cpp20();
+
+    labelimg::core::Asm::HighPrecisionTimer test;
 
 
     auto mainwindow = new MainWindow{};
