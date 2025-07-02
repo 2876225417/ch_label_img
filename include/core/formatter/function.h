@@ -1,14 +1,20 @@
 #ifndef FUNCTION_H
 #define FUNCTION_H
 
-#include "core/formatter/reflection.h"
+#include <core/formatter/reflection.h>
+#include <core/asm/hp_timer.hpp>
 #include <chrono>
 #include <cstddef>
 #include <cstdint>
+#include <iomanip>
+#include <ios>
+#include <ostream>
+#include <sstream>
 #include <string_view>
 #include <tuple>
 #include <type_traits>
 #include <array>
+#include <string>
 
 
 #if __cplusplus >= 202002L
@@ -21,6 +27,8 @@
 namespace labelimg::core::formatter::function {
 using reflection::find_char;
 using reflection::rfind_char;
+
+using asm_::HighPrecisionTimer;
 
 consteval auto 
 extract_function_name(std::string_view pretty_function) 
@@ -123,6 +131,16 @@ struct FunctionInfo {
     }
 
     [[nodiscard]] auto
+    to_full_string()
+    const -> std::string {
+        std::ostringstream oss;
+        oss << "Function: "   << to_string() << "\n"
+            << " File: "      << file_name   << ": " << line_number << "\n"
+            << " Signature: " << full_signature;
+        return oss.str();
+    }
+
+    [[nodiscard]] auto
     is_member_function()
     const -> bool {
         return !class_name.empty();
@@ -134,6 +152,43 @@ struct FunctionInfo {
         return !namespace_name.empty();
     }
 };
+
+inline auto operator<<(std::ostream& os, const FunctionInfo& info) -> std::ostream& {
+    os << info.to_string();
+    return os;
+}
+
+struct DetailedFunctionInfo {
+    const FunctionInfo& info;
+    explicit DetailedFunctionInfo(const FunctionInfo& f)
+        : info{f} { }
+};
+
+inline auto operator<<(std::ostream& os, const DetailedFunctionInfo& detailed) -> std::ostream& {
+    os << detailed.info.to_detailed_string();
+    return os;
+}
+
+struct FullFunctionInfo {
+    const FunctionInfo& info;
+    explicit FullFunctionInfo(const FunctionInfo& f) 
+        : info{f} { }
+};
+
+inline auto operator>>(std::ostream& os, const FullFunctionInfo& full) -> std::ostream& {
+    os << full.info.to_full_string();
+    return os;
+}
+
+inline auto detailed(const FunctionInfo& info) -> DetailedFunctionInfo {
+    return DetailedFunctionInfo{info};
+}
+
+inline auto full(const FunctionInfo& info) -> FullFunctionInfo {
+    return FullFunctionInfo{info};
+}
+
+
 
 template <typename T = void>
 class FunctionInfoExtractor {
@@ -279,23 +334,80 @@ get_class_name(const char* pretty_function = __PRETTY_FUNCTION__) {
 #define FULL_FUNCTION_INFO() \
     get_caller_info(__FILE__, __LINE__, __PRETTY_FUNCTION__);
 
+enum class TimerType {
+    STANDARD,       // std
+    HIGH_PRECISION, // asm
+    HYBRID          // 组合使用，体现差异
+};
+
+template <TimerType Type = TimerType::HIGH_PRECISION>
 struct FunctionTracer {
     FunctionInfo info;
-    std::chrono::high_resolution_clock::time_point start_time;
-    
+
+    std::chrono::high_resolution_clock::time_point std_start_time;
+    HighPrecisionTimer::TimePoint hp_start_time;
+
     explicit FunctionTracer(FunctionInfo func_info)
         : info{std::move(func_info)}
-        , start_time{std::chrono::high_resolution_clock::now()}
-        { }
+        {
+        if constexpr (Type == TimerType::STANDARD || Type == TimerType::HYBRID) 
+            std_start_time = std::chrono::high_resolution_clock::now();
+        
+        if constexpr (Type == TimerType::HIGH_PRECISION || Type == TimerType::HYBRID) {}
+            hp_start_time = HighPrecisionTimer::now(); 
+    }
+
+
 
     ~FunctionTracer() {
-        auto end_time = std::chrono::high_resolution_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end_time - start_time);
+        if constexpr (Type == TimerType::STANDARD) {
+            auto std_end_time = std::chrono::high_resolution_clock::now();
+            auto duration = std::chrono::duration_cast<std::chrono::microseconds>(
+                std_end_time - std_start_time
+            );
+
+            std::cout << "[TRACE] " << info 
+                    << " executed in " << duration.count() 
+                    << " ns (std::chrono)\n";
+        } else if constexpr (Type == TimerType::HIGH_PRECISION) {
+            auto hp_end_time = HighPrecisionTimer::now();
+            auto hp_duration = HighPrecisionTimer::Duration{hp_start_time, hp_end_time};
+
+            // TODO(ppqwqqq): Replace this logger info async logger
+            std::cout << "[TRACE] " << info << " executed in "
+                      << std::fixed << std::setprecision(3)
+                      << hp_duration.to_nanoseconds() << " ns ("
+                      << hp_duration.get_cycles() << " cycles()\n";
+        } else if constexpr (Type == TimerType::HYBRID) {
+            auto std_end_time = std::chrono::high_resolution_clock::now();
+            auto hp_end_time = HighPrecisionTimer::now();
+
+            auto std_duration = std::chrono::duration_cast<std::chrono::nanoseconds>(
+                std_end_time - std_start_time
+            );
+
+            auto hp_duration = HighPrecisionTimer::Duration{hp_start_time, hp_end_time};
+            
+            // TODO(ppqwqqq): Replace this logger info async logger
+            std::cout << "[TRACE] " << info << " executed in:\n"
+                      << "  std::chrono: "  << std_duration.count() << " ns\n"
+                      << "  CPU cycles:  "  << std::fixed << std::setprecision(3)
+                      << hp_duration.to_nanoseconds() << " ns ("
+                      << hp_duration.get_cycles() << " cycles)\n"
+                      << "  Difference:  "  << std::abs(static_cast<double>(
+                                                    std_duration.count()) - hp_duration.to_nanoseconds()
+                                               ) << " ns\n"; 
+        }
     }
 };
 
 #define TRACE_FUNCTION() \
     FunctionTracer _tracer(CURRENT_FUNCTION_INFO())
+
+class PerformanceBenchmark {
+
+};
+
 
 
 } // namespace labelimg::core::formatter::function

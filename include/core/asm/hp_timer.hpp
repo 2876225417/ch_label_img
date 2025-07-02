@@ -1,9 +1,8 @@
+#ifndef HP_TIMER_HPP
+#define HP_TIMER_HPP
 #include <pch.h>
-#include <chrono>
-#include <cstdint>
-#include <thread>
 
-namespace labelimg::core::Asm {
+namespace labelimg::core::asm_ {
 // TODO(ppqwqqq): Add specific compile options 
 class HighPrecisionTimer {
 public:
@@ -11,7 +10,7 @@ public:
 
 private:
     static inline double cpu_frequency_ghz = 0.0;
-    static inline bool   frequence_calibrated = false;
+    static inline bool   frequency_calibarted = false;
     
     [[nodiscard]] static inline auto 
     get_cpu_cycles() // 获取 CPU 时钟周期数
@@ -82,7 +81,7 @@ private:
     }
 
     static void calibrate_frequency() {
-        if (frequence_calibrated) return;
+        if (frequency_calibarted) return;
         
         constexpr int calibration_ms = 100;
 
@@ -101,10 +100,91 @@ private:
         auto cycle_diff = end_cycles - start_cycles;
         
         cpu_frequency_ghz = static_cast<double>(cycle_diff) / duration_ns;
-        frequence_calibrated = true;
+        frequency_calibarted = true;
     }
-    
+public:
+    // 高精度时间点
+    struct TimePoint {
+        cycle_count_t cycles;
+        std::chrono::high_resolution_clock::time_point wall_time;
+        
+        TimePoint()
+            : cycles{get_cpu_cycles()}
+            , wall_time{std::chrono::high_resolution_clock::now()} 
+            { }
+
+        explicit TimePoint(cycle_count_t c)
+            : cycles{c}
+            , wall_time{std::chrono::high_resolution_clock::now()}
+            { }
+    };
+
+    // 高精度时间间隔
+    struct Duration {
+        cycle_count_t cycles;
+        std::chrono::nanoseconds wall_duration;
+
+        Duration(const TimePoint& start, const TimePoint& end)
+            : cycles{end.cycles - start.cycles}
+            , wall_duration(std::chrono::duration_cast<std::chrono::nanoseconds>(
+                end.wall_time - start.wall_time
+            )) {}
+        
+        // 将周期转换为 纳秒
+        [[nodiscard]] auto to_nanoseconds() const -> double {
+            if (!frequency_calibarted) { }
+                // TODO(ppqwqqq): Need to calibrate frequency
+            
+            if (cpu_frequency_ghz > 0.0) 
+                return static_cast<double>(cycles) / cpu_frequency_ghz;
+            else 
+                return static_cast<double>(wall_duration.count());
+        
+        }
+
+        // 将周期转换为 微秒
+        [[nodiscard]] auto to_microseconds() const -> double {
+            return to_nanoseconds() / 1e3;
+        }
+
+        // 将周期转换 毫秒
+        [[nodiscard]] auto to_millisecons() const -> double {
+            return to_nanoseconds() / 1e6;
+        }
+
+        // 将周期转换为 秒
+        [[nodiscard]] auto to_seconds() const -> double {
+            return to_nanoseconds() / 1e9;
+        }
+
+        // 获取 CPU 周期数
+        [[nodiscard]] auto get_cycles() const -> cycle_count_t {
+            return cycles;
+        }
+
+        // 获取墙钟时间
+        [[nodiscard]] auto get_wall_duration() const -> std::chrono::nanoseconds {
+            return wall_duration;
+        }
+    };
+
+    [[nodiscard]] static auto now() -> TimePoint {
+        return TimePoint{};
+    }
+
+    [[nodiscard]] static auto get_cpu_frequency() -> double {
+        if (!frequency_calibarted) calibrate_frequency();
+        return cpu_frequency_ghz;
+    }
+
+    // 手动（重新）校准频率
+    static void recalibrate() {
+        frequency_calibarted = false;
+        calibrate_frequency();
+    }
 };
 
 
-} // namespace labelimg::core::Asm
+} // namespace labelimg::core::asm_ 
+
+#endif // HP_TIMER_HPP

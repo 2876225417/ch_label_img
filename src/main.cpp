@@ -20,7 +20,6 @@ auto main(int argc, char* argv[]) -> int {
 
     labelimg::core::formatter::function::get_caller_info_cpp20();
 
-    labelimg::core::Asm::HighPrecisionTimer test;
 
 
     auto mainwindow = new MainWindow{};
