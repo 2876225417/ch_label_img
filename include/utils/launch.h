@@ -40,7 +40,7 @@ void app_launch() {
                                                                           << PROJECT_VERSION_PATCH << "\t\t\t\t\t|" << '\n'
               #endif 
               << "\t\t" << "=================================================================================" << '\n'
-              << "\n";
+              << "\n\n";
 }
 } // namespace labelimg::utils
 #endif

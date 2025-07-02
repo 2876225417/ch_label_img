@@ -11,6 +11,11 @@
 #include <core/asm/hp_timer.hpp>
 #include <qtils/logger.hpp>
 
+struct [[meta]] A {
+
+};
+
+
 auto main(int argc, char* argv[]) -> int {
     QApplication app(argc, argv);
 
@@ -18,7 +23,7 @@ auto main(int argc, char* argv[]) -> int {
 
     labelimg::core::formatter::function::FunctionInfo i;
 
-    labelimg::core::formatter::function::get_caller_info_cpp20();
+    //std::cout << labelimg::core::formatter::function::get_caller_info_cpp20();
 
 
 
@@ -27,3 +32,4 @@ auto main(int argc, char* argv[]) -> int {
 
     return app.exec();
 }
+

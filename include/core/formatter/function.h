@@ -227,6 +227,7 @@ public:
 #endif // HAS_SOURCE_LOCATION
 };
 
+// TODO(ppqwqqq): Replace macro to template
 #define CURRENT_FUNCTION_INFO() \
     labelimg::core::formatter::function::FunctionInfoExtractor<>::get_info(__FILE__, __LINE__)
 
@@ -325,6 +326,7 @@ get_class_name(const char* pretty_function = __PRETTY_FUNCTION__) {
     return extract_class_name(pretty_function);
 }
 
+// TODO(ppqwqqq): Replace macro to template
 #define FUNCTION_NAME() \
     get_function_name(__PRETTY_FUNCTION__)
 
@@ -357,8 +359,6 @@ struct FunctionTracer {
             hp_start_time = HighPrecisionTimer::now(); 
     }
 
-
-
     ~FunctionTracer() {
         if constexpr (Type == TimerType::STANDARD) {
             auto std_end_time = std::chrono::high_resolution_clock::now();
@@ -387,7 +387,7 @@ struct FunctionTracer {
             );
 
             auto hp_duration = HighPrecisionTimer::Duration{hp_start_time, hp_end_time};
-            
+
             // TODO(ppqwqqq): Replace this logger info async logger
             std::cout << "[TRACE] " << info << " executed in:\n"
                       << "  std::chrono: "  << std_duration.count() << " ns\n"
@@ -401,12 +401,73 @@ struct FunctionTracer {
     }
 };
 
-#define TRACE_FUNCTION() \
-    FunctionTracer _tracer(CURRENT_FUNCTION_INFO())
+// TODO(ppqwqqq): Replace macro to template
+#define TRACE_FUNCTION_STD() \
+    FunctionTracer<TimerType::STANDARD> _tracer(CURRENT_FUNCTION_INFO())
+
+#define TRACE_FUNCTION_HP() \
+    FunctionTracer<TimerType::HIGH_PRECISION> _tracer(CURRENT_FUNCTION_INFO())
+
+#define TRACE_FUNCTION_HYBRID() \
+    FunctionTracer<TimerType::HYBRID> _tracer(CURRENT_FUNCTION_INFO())
+
+// 默认
+#define TRACE_FUNCTION() TRACE_FUNCTION_HP()
 
 class PerformanceBenchmark {
+private:
+    std::string name;
+    HighPrecisionTimer::TimePoint start_time;
+    std::vector<HighPrecisionTimer::Duration> measurements;
 
+public:
+    explicit PerformanceBenchmark(std::string name)
+        : name{std::move(name)}
+        { start_time = HighPrecisionTimer::now(); }
+
+    void checkpoint(const std::string& checkpoint_name = "") {
+        auto end_time = HighPrecisionTimer::now();
+        auto duration = HighPrecisionTimer::Duration{start_time, end_time};
+        measurements.push_back(duration);
+
+        // TODO(ppqwqqq): Replace this logger info async logger
+        std::cout << "[BENCHMARK]" << name;
+        if (!checkpoint_name.empty()) std::cout << " - " << checkpoint_name;
+        std::cout << ": " << std::fixed << std::setprecision(3)
+                  << duration.to_nanoseconds() << " ns ("
+                  << duration.get_cycles() << " cycles)\n";
+        start_time = end_time;
+    }
+
+    void summary() const {
+        if (measurements.empty()) return;
+
+        double total_ns = 0.0;
+        std::uint64_t total_cycles = 0;
+
+        for (const auto& measurement: measurements) {
+            total_ns += measurement.to_nanoseconds();
+            total_cycles += measurement.get_cycles();
+        }
+        // TODO(ppqwqqq): Replace this logger info async logger
+        std::cout << "[BENCHMARK SUMMARY]" << name << ":\n"
+                  << "  Total measurements: " << measurements.size() << "\n"
+                  << "  Total time: " << std::fixed << std::setprecision(3)
+                  << total_ns << " ns (" << total_cycles << " cycles)\n"
+                  << "  Average time: " << (total_ns / measurements.size()) << " ns\n"
+                  << "  CPU frequency: " << HighPrecisionTimer::get_cpu_frequency() << " GHz\n";
+    }
 };
+
+// TODO(ppqwqqq): Replace macro to template
+#define BENCHMARK(name) \
+    PerformanceBenchmark _benchmark(name)
+
+#define BENCHMARK_CHECKPOINT(name) \
+    _benchmark.checkpoint(name)
+
+#define BENCHMARK_SUMMARY() \
+    _benchmark.summary()
 
 
 
