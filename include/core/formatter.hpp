@@ -653,6 +653,6 @@ auto logg( app_format_string<fmt_arg_type_t<Args>...> fmt_str
 
 
 #endif
-}
+}  // namespace labelimg::core::formatter
 
 #endif // FORMATTER_HPP

@@ -10,10 +10,7 @@
 #include <window/mainwindow.h>
 #include <core/asm/hp_timer.hpp>
 #include <qtils/logger.hpp>
-
-struct [[meta]] A {
-
-};
+#include <core/refl/detail/hash.hpp>
 
 
 auto main(int argc, char* argv[]) -> int {
