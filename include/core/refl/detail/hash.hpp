@@ -10,6 +10,9 @@
 #define HAS_BIT_CAST 0
 #endif
 
+
+
+
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -19,7 +22,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
-namespace labelimg::core::refl::detail {
+namespace labelimg::core::refl::hash {
 
 namespace fnv1a {
 /*** FNV-1a 描述
@@ -49,8 +52,22 @@ using hash_type = typename default_constants::hash_type;
 }  // namespace fnv1a 
 
 
-// 编译期字符串哈希计算
-constexpr auto 
+constexpr auto // 哈希组合 
+hash_combine(std::size_t lhs, std::size_t rhs)
+noexcept -> std::size_t {
+    return // 黄金比例常数的近似值 
+        lhs ^ (rhs + 0x9e3779b9 + (lhs << 6) + (lhs >> 2));
+}
+
+template <typename... Args>
+constexpr auto // 多个哈希组合
+hash_combine(std::size_t first, Args... args) 
+noexcept -> std::size_t {
+    if constexpr (sizeof...(args) == 0) return first;
+    else return hash_combine(first, hash_combine(args...));
+}
+
+constexpr auto // 编译期字符串哈希计算 
 string_hash(const char* str, std::size_t length) 
 noexcept -> std::size_t {
     auto hash = 
@@ -62,8 +79,7 @@ noexcept -> std::size_t {
     return hash;
 }
 
-// 字符串字面量 哈希
-constexpr auto
+constexpr auto // 字符串字面量 哈希
 string_hash(const char* str)
 noexcept -> std::size_t {
     auto hash = 
@@ -77,15 +93,14 @@ noexcept -> std::size_t {
     return hash;
 };
 
-// std::string_view 哈希
-constexpr auto
+constexpr auto // std::string_view 哈希
 string_hash(std::string_view str) 
 noexcept -> std::size_t {
     return string_hash(str.data(), str.length());
 }
 
 template <typename T> constexpr auto 
-type_name_hash() 
+type_name_hash() // 类型名称哈希
 noexcept -> std::size_t { // 根据类名计算哈希值
 #if defined (__GNUC__) || defined (__clang__)
     return string_hash(__PRETTY_FUNCTION__);
@@ -97,14 +112,14 @@ noexcept -> std::size_t { // 根据类名计算哈希值
 }
 
 template <typename T> inline auto 
-type_address_hash() 
+type_address_hash() // 类型地址哈希
 noexcept -> std::size_t {       // 根据类型地址计算哈希(运行时)
     static char type_id = 0;    // 使用类型的静态变量地址作为唯一标识符
     return reinterpret_cast<std::size_t>(&type_id);
 }
 
 template <typename T> constexpr auto
-type_hash() 
+type_hash() // 编译期 类型哈希
 noexcept -> std::size_t {
     if constexpr (requires { type_name_hash<T>(); }) {
         return type_name_hash<T>();
@@ -121,75 +136,107 @@ noexcept -> std::size_t {
     return type_address_hash<T>();
 }
 
-
-
-
-
-constexpr auto // 哈希组合 
-hash_combine(std::size_t lhs, std::size_t rhs)
-noexcept -> std::size_t {
-    // 黄金比例常数的近似值
-    return lhs ^ (rhs + 0x9e3779b9 + (lhs << 6) + (lhs >> 2));
-}
-
-template <typename... Args>
-constexpr auto // 多个哈希组合
-hash_combine(std::size_t first, Args... args) 
-noexcept -> std::size_t {
-    if constexpr (sizeof...(args) == 0) return first;
-    else return hash_combine(first, hash_combine(args...));
-}
-
 template <typename... Types>
-constexpr auto // 递归组合 类型哈希
+constexpr auto // 递归 组合类型哈希
 combine_type_hashes()
 noexcept -> std::size_t {
     if constexpr (sizeof...(Types) == 0) return 0;
     else return hash_combine(type_hash<Types>()...);
 }
 
-// 特殊类型哈希处理
+template <typename T>
+constexpr auto // 浮点型 哈希
+float_hash(T value)
+noexcept -> std::size_t {
+    static_assert(std::is_floating_point_v<T>);
+#ifdef HAS_BIT_CAST
+    if constexpr (sizeof(T) <= sizeof(std::size_t)) {
+        if      constexpr (sizeof(T) == sizeof(std::uint32_t)) 
+        {
+            return static_cast<std::size_t>(
+                std::bit_cast<std::uint32_t>(static_cast<float>(value))
+            );
+        } 
+        else if constexpr (sizeof(T) == sizeof(std::uint64_t))
+        {
+            return std::bit_cast<std::uint64_t>(
+                static_cast<double>(value)
+            );
+        }
+        else
+        {   return type_hash<T>(); }
+    } else{ return type_hash<T>(); }
+#else
+    if (std::is_constant_evaluated())  
+    {   return type_hash<T>(); } // 编译期只返回类型哈希
+    else 
+    {
+        if constexpr (sizeof(T) <= sizeof(std::size_t))
+        {
+=            std::size_t result = 0;
+            std::memcpy(&result, &value, sizeof(value));
+            return result;
+        } 
+        else
+        {
+            const auto* bytes = reinterpret_cast<const unsigned char*>(&value);
+            std::size_t result =  type_hash<T>();
+            for (std::size_t i = 0; i < sizeof(T); ++i) 
+            { result = hash_combine(result, static_cast<std::size_t>(bytes[i])); }
+            return result;
+        }
+    }                           // 运行时使用完整的位级哈希
+#endif // HAS_BIT_CAST
+}
+
+template <typename T>
+auto runtime_float_hash(T value) 
+noexcept -> std::size_t {
+    static_assert(std::is_floating_point_v<T>);
+    if constexpr (sizeof(T) <= sizeof(std::size_t)) {
+        std::size_t result = 0;
+        std::memcpy(&result, &value, sizeof(value));
+        return result;
+    } else {
+        const auto* bytes = reinterpret_cast<const unsigned char*>(&value);
+        std::size_t result = type_hash<T>();
+        for (std::size_t i = 0; i < sizeof(T); ++i) 
+        { result = hash_combine(result, static_cast<std::size_t>(bytes[i])); }
+        return result;
+    }
+}
+
 template <typename T>
 constexpr auto
 pointer_type_hash() 
-noexcept -> std::size_t {
-    return hash_combine(type_hash<T>(), string_hash("*"));
-}
+noexcept -> std::size_t 
+{ return hash_combine(type_hash<T>(), string_hash("*")); }
 
 template <typename T>
 constexpr auto
 reference_type_hash()
-noexcept -> std::size_t {
-    return hash_combine(type_hash<T>(), string_hash("&"));
-}
+noexcept -> std::size_t 
+{ return hash_combine(type_hash<T>(), string_hash("&")); }
 
 template <typename T>
 constexpr auto
 rvalue_reference_type_hash() 
-noexcept -> std::size_t {
-    return hash_combine(type_hash<T>(), string_hash("&&"));
-}
+noexcept -> std::size_t { return hash_combine(type_hash<T>(), string_hash("&&")); }
 
 template <typename T, std::size_t N>
 constexpr auto
 array_type_hash()
-noexcept -> std::size_t {
-    return hash_combine(type_hash<T>(), N);
-}
+noexcept -> std::size_t { return hash_combine(type_hash<T>(), N); }
 
 template <typename T>
 constexpr auto
 const_type_hash()
-noexcept -> std::size_t {
-    return hash_combine(type_hash<T>(), string_hash("const"));
-}
+noexcept -> std::size_t { return hash_combine(type_hash<T>(), string_hash("const")); }
 
 template <typename T>
 constexpr auto
 volatile_type_hash()
-noexcept -> std::size_t {
-    return hash_combine(type_hash<T>(), string_hash("volatile"));
-}
+noexcept -> std::size_t { return hash_combine(type_hash<T>(), string_hash("volatile")); }
 
 // pair traits
 template <typename T>
@@ -223,145 +270,6 @@ template <typename Tuple, std::size_t... Is>
 constexpr auto hash_tuple(const Tuple& t, std::index_sequence<Is...>)
 noexcept -> std::size_t 
 { return hash_combine(compute_hash(std::get<Is>(t))...); }
-
-template <typename T>
-constexpr auto 
-float_hash(T value)
-noexcept -> std::size_t {
-    static_assert(std::is_floating_point_v<T>);
-#ifdef HAS_BIT_CAST
-    if constexpr (sizeof(T) <= sizeof(std::size_t)) {
-        if      constexpr (sizeof(T) == sizeof(std::uint32_t)) 
-        {
-            return static_cast<std::size_t>(
-                std::bit_cast<std::uint32_t>(static_cast<float>(value))
-            );
-        } 
-        else if constexpr (sizeof(T) == sizeof(std::uint64_t))
-        {
-            return std::bit_cast<std::uint64_t>(
-                static_cast<double>(value)
-            );
-        }
-        else
-        {   return type_hash<T>(); }
-    } else{ return type_hash<T>(); }
-#else
-    if (std::is_constant_evaluated())  
-    {   return type_hash<T>(); } // 编译期只返回类型哈希
-    else 
-    {
-        if constexpr (sizeof(T) <= sizeof(std::size_t))
-        {
-            std::size_t result = 0;
-            std::memcpy(&result, &value, sizeof(value));
-            return result;
-        } 
-        else
-        {
-            const auto* bytes = reinterpret_cast<const unsigned char*>(&value);
-            std::size_t result =  type_hash<T>();
-            for (std::size_t i = 0; i < sizeof(T); ++i) 
-            { result = hash_combine(result, static_cast<std::size_t>(bytes[i])); }
-            return result;
-        }
-    }                           // 运行时使用完整的位级哈希
-#endif // HAS_BIT_CAST
-}
-
-template <typename T>
-auto runtime_float_hash(T value) 
-noexcept -> std::size_t {
-    static_assert(std::is_floating_point_v<T>);
-    if constexpr (sizeof(T) <= sizeof(std::size_t)) {
-        std::size_t result = 0;
-        std::memcpy(&result, &value, sizeof(value));
-        return result;
-    } else {
-        const auto* bytes = reinterpret_cast<const unsigned char*>(&value);
-        std::size_t result = type_hash<T>();
-        for (std::size_t i = 0; i < sizeof(T); ++i) 
-        { result = hash_combine(result, static_cast<std::size_t>(bytes[i])); }
-        return result;
-    }
-}
-
-
-#ifdef NDEBUG
-class HashCollisionDetector: // 哈希冲突检测器 
-    public Singleton<HashCollisionDetector> {
-    MAKE_SINGLETON_NO_DEFAULT_CTOR_DTOR(HashCollisionDetector)
-public:
-    auto check_and_record(std::size_t hash, const char* type_name) {
-        if (_hashes.find(hash) != _hashes.end()) {
-            std::cerr << "Hash collision detected for type: " << type_name 
-                      << " (hash: " << hash << ")\n";
-            return false;
-        }
-        _hashes.insert(hash);
-        return true;
-    }
-private:
-    std::unordered_set<std::size_t> _hashes;
-};
-
-
-template <typename HashType>
-constexpr auto 
-REFL_CHECK_HASH_COLLISION(HashType hash, const char* type_name)
-noexcept -> bool { return labelimg::core::refl::detail::HashCollisionDetector::instance().check_and_record(hash, type_name); }
-
-#else
-template <typename HashType>
-constexpr auto 
-REFL_CHECK_HASH_COLLISION(HashType hash, const char* type_name) 
-noexcept -> bool { return true; }
-#endif // NDEBUG
-
-
-
-
-
-
-
-template <typename T>
-constexpr auto REFL_TYPE_HASH() 
-noexcept -> std::size_t
-{ return type_hash<T>(); }
-
-template <typename T>
-constexpr auto REFL_STRING_HASH(T&& str) 
-noexcept -> std::size_t
-{ return REFL_STRING_HASH(std::forward<T>(str), std::size_t{}); }
-
-template <typename T>
-constexpr auto REFL_STRING_HASH(T&& str, std::size_t length)
-noexcept -> std::size_t {
-    using DecayedT = std::decay_t<T>;
-
-    if constexpr (std::is_same_v<DecayedT, const char*> ||
-                  std::is_same_v<DecayedT, char*>) {
-        if (length == 0) return string_hash(str);
-        else             return string_hash(str, length);
-    } else if constexpr (std::is_convertible_v<T, std::string_view>) {
-        std::string_view sv{std::forward<T>(str)};
-        return string_hash(
-             sv.data(),
-          length == 0 ? sv.length() : std::min(length, sv.length())
-        );
-    }
-}
-
-template <typename... Args>
-constexpr auto HASH_COMBINE(Args... args)
-noexcept -> std::size_t 
-{ return hash_combine(static_cast<std::size_t>(args)...); }
-
-template <typename... Types>
-constexpr auto COMBINE_TYPE_HASHES()
-noexcept -> std::size_t
-{ return combine_type_hashes<Types...>(); }
-
 
 template <typename T> 
 constexpr auto compute_hash(T&& value)
@@ -426,12 +334,53 @@ noexcept -> std::size_t {
     }                                                 // Default
 }
 
+template <typename T>
+constexpr auto REFL_STRING_HASH(T&& str) 
+noexcept -> std::size_t
+{ return REFL_STRING_HASH(std::forward<T>(str), std::size_t{}); }
+
+template <typename T>
+constexpr auto REFL_STRING_HASH(T&& str, std::size_t length)
+noexcept -> std::size_t {
+    using DecayedT = std::decay_t<T>;
+
+    if constexpr (std::is_same_v<DecayedT, const char*> ||
+                  std::is_same_v<DecayedT, char*>) {
+        if (length == 0) return string_hash(str);
+        else             return string_hash(str, length);
+    } else if constexpr (std::is_convertible_v<T, std::string_view>) {
+        std::string_view sv{std::forward<T>(str)};
+        return string_hash(
+             sv.data(),
+          length == 0 ? sv.length() : std::min(length, sv.length())
+        );
+    }
+}
+
+template <typename T>
+constexpr auto REFL_TYPE_HASH() 
+noexcept -> std::size_t
+{ return type_hash<T>(); }
+
+template <typename T>
+constexpr auto REFL_FLOATING_POINT_HASH(float f)
+noexcept -> std::size_t 
+{ return float_hash(f); }
+
+template <typename... Args>
+constexpr auto HASH_COMBINE(Args... args)
+noexcept -> std::size_t 
+{ return hash_combine(static_cast<std::size_t>(args)...); }
+
+template <typename... Types>
+constexpr auto COMBINE_TYPE_HASHES()
+noexcept -> std::size_t
+{ return combine_type_hashes<Types...>(); }
+
 template <typename... Args>
 constexpr auto MIXED_HASH(Args&&... args)
 noexcept -> std::size_t 
 { return hash_combine(compute_hash(std::forward<Args>(args))...); }
-
-
 
 template <typename T>
 constexpr auto REFL_POINTER_TYPE_HASH()
@@ -463,7 +412,35 @@ constexpr auto REFL_VOLATILE_TYPE_HASH()
 noexcept -> std::size_t 
 { return volatile_type_hash<T>(); }
 
+#ifdef NDEBUG
+class HashCollisionDetector: // 哈希冲突检测器 
+    public Singleton<HashCollisionDetector> {
+    MAKE_SINGLETON_NO_DEFAULT_CTOR_DTOR(HashCollisionDetector)
+public:
+    auto check_and_record(std::size_t hash, const char* type_name) {
+        if (_hashes.find(hash) != _hashes.end()) {
+            std::cerr << "Hash collision detected for type: " << type_name 
+                      << " (hash: " << hash << ")\n";
+            return false;
+        }
+        _hashes.insert(hash);
+        return true;
+    }
+private:
+    std::unordered_set<std::size_t> _hashes;
+};
 
+template <typename HashType>
+constexpr auto 
+REFL_CHECK_HASH_COLLISION(HashType hash, const char* type_name)
+noexcept -> bool { return labelimg::core::refl::detail::HashCollisionDetector::instance().check_and_record(hash, type_name); }
+
+#else
+template <typename HashType>
+constexpr auto 
+REFL_CHECK_HASH_COLLISION(HashType hash, const char* type_name) 
+noexcept -> bool { return true; }
+#endif // NDEBUG
 
 
 }  // namespace labelimg::core::refl::detail
