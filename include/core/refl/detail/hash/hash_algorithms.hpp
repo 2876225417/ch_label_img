@@ -1,5 +1,6 @@
 #pragma once
 
+#include <sys/types.h>
 #include <cstddef>
 #include <cstdint>
 #include <string_view>
@@ -79,8 +80,6 @@ namespace djb2 {
  *   初始值: 5381
  *   公式:   hash * 33 + c
  */
-
-
 static constexpr std::uint32_t initial_value = 5381;
 static constexpr std::uint32_t multiplier = 33;
 
@@ -144,8 +143,211 @@ noexcept -> std::size_t {
 } // namespace djb2 
 
 namespace murmur3 {
+/*** MurmurHash3 描述
+ *   Austin Appleby 的高性能非加密哈希算法
+ */
+
+// MurmurHash3 常数
+// 32 位
+static constexpr std::uint32_t c1_32 = 0xcc9e2d51;
+static constexpr std::uint32_t c2_32 = 0x1b873593;
+static constexpr std::uint32_t r1_32 = 15;
+static constexpr std::uint32_t r2_32 = 13;
+static constexpr std::uint32_t m_32  = 5;
+static constexpr std::uint32_t n_32  = 0xe6546b64;
+
+// 64 位
+static constexpr std::uint64_t c1_64 = 0x87c37b91114253d5ULL;
+static constexpr std::uint64_t c2_64 = 0x4cf5ad432745937fULL;
+static constexpr std::uint64_t r1_64 = 31;
+static constexpr std::uint64_t r2_64 = 27;
+static constexpr std::uint64_t m_64  = 5;
+static constexpr std::uint64_t n_64  = 0x52dce729; 
+
+constexpr auto
+rotl32(std::uint32_t x, std::int8_t r)
+noexcept -> std::uint32_t 
+{ return (x << r) | (x >> (32 - r)); }
+
+constexpr auto
+rotl64(std::uint64_t x, std::int16_t r)
+noexcept -> std::uint64_t 
+{ return (x << r) | (x >> (64 - r)); }
+
+constexpr auto 
+fmix32(std::uint32_t h)
+noexcept -> std::uint32_t {
+    h ^= h >> 16;
+    h *= 0x85ebca6b;
+    h ^= h >> 13;
+    h *= 0xc2b2ae35;
+    h ^= h >> 16;
+    return h; 
+}
+
+constexpr auto
+fmix64(std::uint64_t k) 
+noexcept -> std::uint64_t {
+    k ^= k >> 33;
+    k *= 0xff51afd7ed558ccdULL;
+    k ^= k >> 33;
+    k *= 0xc4ceb9f31a85ec53ULL;
+    k ^= k >> 33;
+    return k;
+}
+
+constexpr auto
+compute32(const char* data, std::size_t length, std::uint32_t seed = 0)
+noexcept -> std::uint32_t {
+    const std::size_t nblocks = length / 4;
+    std::uint32_t h1 = seed;
+    
+    // 处理 4 字节块
+    for (std::size_t i = 0; i < nblocks; ++i) {
+        std::uint32_t k1 = 0;
+
+        k1 |= static_cast<std::uint32_t>(static_cast<unsigned char>(data[i * 4 + 0])) << 0;
+        k1 |= static_cast<std::uint32_t>(static_cast<unsigned char>(data[i * 4 + 1])) << 8;
+        k1 |= static_cast<std::uint32_t>(static_cast<unsigned char>(data[i * 4 + 2])) << 16;
+        k1 |= static_cast<std::uint32_t>(static_cast<unsigned char>(data[i * 4 + 3])) << 24;
+        
+        k1 *= c1_32;
+        k1 = rotl32(k1, r1_32);
+        k1 *= c2_32;
+
+        h1 ^= k1;
+        h1 = rotl32(h1, r2_32);
+        h1 = h1 * m_32 + n_32;
+    }
+
+    // 处理剩余字符
+    const std::size_t tail_start = nblocks * 4;
+    std::uint32_t k1 = 0;
+
+    switch (length & 3) {
+        case 3: 
+            k1 ^= static_cast<std::uint32_t>(static_cast<unsigned char>(data[tail_start + 2])) << 16; 
+            [[fallthrough]];
+        case 2:
+            k1 ^= static_cast<std::uint32_t>(static_cast<unsigned char>(data[tail_start + 1])) << 8;
+            [[fallthrough]];
+        case 1:
+            k1 ^= static_cast<std::uint32_t>(static_cast<unsigned char>(data[tail_start + 0]));
+            k1 *= c1_32;
+            k1 = rotl32(k1, r1_32);
+            k1 *= c2_32;
+            h1 ^= k1;
+    }
+
+    h1 ^= static_cast<std::uint32_t>(length);
+    h1 = fmix32(h1);
+
+    return h1;
+} 
+
+constexpr auto
+compute64(const char* data, std::size_t length, std::uint64_t seed = 0) 
+noexcept -> std::uint64_t {
+    const std::size_t nblocks = length / 8;
+    std::uint64_t h1 = seed;
+
+    // 处理 8 字节块
+    for (std::size_t i = 0; i < nblocks; ++i) {
+        std::uint64_t k1 = 0;
+        for (int j = 0; j < 8; ++j)
+        { k1 |= static_cast<std::uint64_t>(static_cast<unsigned char>(data[i * 8 + j])) << (j * 8); }
+        
+        k1 *= c1_64;
+        k1 = rotl64(k1, r1_64);
+        k1 *= c2_64;
+
+        h1 ^= k1;
+        h1 = rotl64(h1, r2_64);
+        h1 = h1 * m_64 + n_64;
+    }
+
+    // 处理剩余字节
+    const std::size_t tail_start = nblocks * 8;
+    std::uint64_t k1 = 0;
+
+    const std::size_t remaining = length & 7;
+    for (std::size_t i = 0; i < remaining; ++i) 
+    { k1 |= static_cast<std::uint64_t>(static_cast<unsigned char>(data[tail_start + i])) << (i * 8); }
+
+    if (remaining > 0) {
+        k1 *= c1_64;
+        k1 = rotl64(k1, r1_64);
+        k1 *= c2_64;
+        h1 = k1;
+    }
+
+    h1 ^= static_cast<std::uint64_t>(length);
+    h1 = fmix64(h1);
+
+    return h1;
+}
+
+constexpr auto 
+compute(const char* data, std::size_t length, std::uint32_t seed = 0)
+noexcept -> std::size_t {
+    if constexpr (sizeof(std::size_t) == 8) 
+    { return static_cast<std::size_t>(compute64(data, length, seed)); }
+    else 
+    { return static_cast<std::size_t>(compute32(data, length, seed)); }
+}
+
+constexpr auto 
+compute(std::string_view str, std::uint32_t seed = 0)
+noexcept -> std::size_t 
+{ return compute(str.data(), str.length()); }
 
 } // namespace murmur3 
+
+namespace crc32 {
+/*** crc32 描述
+ *   循环冗余校验算法
+ */
+
+// CRC32 多项式(IEEE 802.3)
+static constexpr std::uint32_t polynomial = 0x3db88320;
+
+constexpr auto
+generate_crc32_table()
+noexcept -> std::array<std::uint32_t, 256> {
+    std::array<std::uint32_t, 256> table{};
+    for (std::uint32_t i = 0; i < 256; ++i) {
+        std::uint32_t crc = i;
+        for (int j = 0; j < 8; ++j) {
+            if (crc & 1) crc = (crc >> 1) ^ polynomial;
+            else crc >>= 1;
+        }
+        table[i] = crc;
+    }
+    return table;
+}
+
+static constexpr auto crc32_table = generate_crc32_table();
+
+constexpr auto 
+compute(const char* data, std::size_t length)
+noexcept -> std::size_t {
+    std::uint32_t crc = 0xffffffff;
+    for (std::size_t i = 0; i < length; ++i)
+    { crc = crc32_table[(crc ^ static_cast<unsigned char>(data[i])) & 0xff] ^ (crc >> 8); }
+    return static_cast<std::size_t>(crc ^ 0xffffffff);
+}
+
+constexpr auto 
+compute(std::string_view str) 
+noexcept -> std::size_t 
+{ return compute(str.data(), str.length()); }
+
+} // namespace crc32 
+
+namespace city_hash {
+
+} // namespace city_hash
+
 
 
 } // namespace labelimg::core::refl::hash::algorithms
