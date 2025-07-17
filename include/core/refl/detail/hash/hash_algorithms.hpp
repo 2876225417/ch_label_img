@@ -10,7 +10,7 @@
 
 namespace labelimg::core::refl::hash::algorithms {
 
-enum class string_hash_algorithm
+enum class StringHashAlgo
     : std::uint8_t {
         fnv1a,
         djb2,
@@ -245,7 +245,7 @@ noexcept -> std::uint32_t {
     return h1;
 } 
 
-constexpr auto
+constexpr auto // 简化ed实现
 compute64(const char* data, std::size_t length, std::uint64_t seed = 0) 
 noexcept -> std::uint64_t {
     const std::size_t nblocks = length / 8;
@@ -345,8 +345,52 @@ noexcept -> std::size_t
 } // namespace crc32 
 
 namespace city_hash {
+/*** CityHash 描述
+ *   Google 开发的高性能非加密哈希算法
+ */
+
+// CityHash 常数
+static constexpr std::uint64_t k0 = 0xc3a5c85c97cb3127ULL;
+static constexpr std::uint64_t k1 = 0xb492b66fbe98f273ULL;
+static constexpr std::uint64_t k2 = 0x9ae16a3b2f90404fULL;
+static constexpr std::uint64_t k3 = 0xc949d7c7509e6557ULL;
+
+constexpr auto 
+rotate(std::uint64_t val, int shift)
+noexcept -> std::uint64_t 
+{ return shift == 0 ? val : ((val >> shift) | (val << (64 - shift))); }
+
+constexpr auto rotate32(std::uint32_t val, int shift) noexcept -> std::uint32_t {
+    
+}
+
+
+
+
 
 } // namespace city_hash
+
+
+template <StringHashAlgo Algo>
+struct AlgoSelector;
+
+template <>
+struct AlgoSelector<StringHashAlgo::fnv1a> {
+    static constexpr auto 
+    compute(const char* data, std::size_t length)
+    noexcept -> std::size_t 
+    { return fnv1a::compute(data, length); }
+
+    static constexpr auto
+    compute(std::string_view str)
+    noexcept -> std::size_t 
+    { return fnv1a::compute(str); }
+};
+
+template <>
+struct AlgoSelector<StringHashAlgo::djb2> {};
+
+
 
 
 
