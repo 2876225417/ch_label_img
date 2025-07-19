@@ -8,9 +8,9 @@ option(USE_CPP_COLORED_DEBUG_OUTPUT "Enable colored messages in Debug output for
 option(ENABLE_EXTERNAL_FMT          "Enable external {fmt} (even though std fmt is available)" ON)
 option(MESSAGE_PADDED               "Enable padded to align prefixes for pretty message"       ON)
 
-set(_PRETTY_MESSAGE_MAX_LENGTH 105 CACHE STRING "Max message length for pretty_message"                         FORCE)
+set(_PRETTY_MESSAGE_MAX_LENGTH 105 CACHE STRING "Max message length for pretty_message"                          FORCE)
 set(BANNER_WIDTH               80  CACHE STRING "Banner width affecting all pretty_message with banner or title" FORCE)
-set(PRETTY_KV_ALIGN_COLUMN     40  CACHE STRING "The column where values start in pretty_message"               FORCE)
+set(PRETTY_KV_ALIGN_COLUMN     40  CACHE STRING "The column where values start in pretty_message"                FORCE)
 
 # 使用 string(ASCII <n>) 生成字符以解决 “/0” 无效转义序列问题
 string(ASCII 27 ESC) # ESC: 

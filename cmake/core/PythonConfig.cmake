@@ -1,0 +1,18 @@
+include_guard(GLOBAL)
+
+option(USE_PYTHON "Enable external Python module for this project or corresponding target`" ON)
+
+if (USE_PYTHON)
+    pretty_message(DEBUG "PythonConfig.cmake module loaded.")
+    pretty_message(VINFO_BANNER "Python Module" "=" ${BANNER_WIDTH})
+    find_package(Python 3.8 REQUIRED QUIET COMPONENTS Interpreter Development)
+    if (Python_FOUND)
+        pretty_message_kv(VINFO "  - Version"       "${Python_VERSION}")
+        pretty_message_kv(VINFO "  - Executable"    "${Python_EXECUTABLE}")
+        pretty_message_kv(VINFO "  - Libraries"     "${Python_LIBRARIES}")
+        pretty_message_kv(VINFO "  - Include Dirs"  "${Python_INCLUDE_DIRS}")    
+    else()
+        pretty_message(OPTIONAL "Could not find a suitable Python (version 3.8+ required).")
+    endif()
+    pretty_message(VINFO_LINE "=" ${BANNER_WIDTH})
+endif()

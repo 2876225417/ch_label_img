@@ -16,6 +16,7 @@ include(PrettyPrint)
 include(ProjectVerbose)
 include(ProjectInfo)
 include(PCH)
+include(PythonConfig)
 
 # deps
 include(DependencyManager)

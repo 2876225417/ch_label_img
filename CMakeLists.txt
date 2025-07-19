@@ -44,6 +44,7 @@ dependency_manager_init()
 
 find_dependency(fmt REQUIRED)
 find_dependency(magic_enum REQUIRED)
+find_dependency(pybind11 REQUIRED)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets)
 if(Qt6_FOUND)

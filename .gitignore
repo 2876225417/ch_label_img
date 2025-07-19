@@ -42,4 +42,4 @@ build
 3rdparty/spdlog/
 3rdparty/source/
 3rdparty/nlohmann_json
-
+3rdparty/pybind11
