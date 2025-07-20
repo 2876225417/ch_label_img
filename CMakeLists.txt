@@ -35,9 +35,9 @@ pretty_message_kv(VINFO "CMAKE_BUILD_TYPE"               "${CMAKE_BUILD_TYPE}")
 pretty_message_kv(VINFO "CMAKE_RUNTIME_OUTPUT_DIRECTORY" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 pretty_message(VINFO_LINE "=" ${BANNER_WIDTH})
 pretty_message(STATUS "")
+
 print_pretty_debug_info()
-pretty_message(STATUS "")
-print_project_info_debug_info()
+
 pretty_message(STATUS "")
 
 dependency_manager_init()

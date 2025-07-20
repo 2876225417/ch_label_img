@@ -1,8 +1,8 @@
 include_guard(GLOBAL)
 
 include(PrettySymbols)
-
-# 彩色输出 
+include(PrettyColors)
+# 彩色输出
 option(USE_CMAKE_COLORED_MESSAGES   "Enable colored messages in CMake output for this project" ON)
 option(USE_CPP_COLORED_DEBUG_OUTPUT "Enable colored messages in Debug output for this project" ON)
 option(ENABLE_EXTERNAL_FMT          "Enable external {fmt} (even though std fmt is available)" ON)
@@ -11,56 +11,6 @@ option(MESSAGE_PADDED               "Enable padded to align prefixes for pretty 
 set(_PRETTY_MESSAGE_MAX_LENGTH 105 CACHE STRING "Max message length for pretty_message"                          FORCE)
 set(BANNER_WIDTH               80  CACHE STRING "Banner width affecting all pretty_message with banner or title" FORCE)
 set(PRETTY_KV_ALIGN_COLUMN     40  CACHE STRING "The column where values start in pretty_message"                FORCE)
-
-# 使用 string(ASCII <n>) 生成字符以解决 “/0” 无效转义序列问题
-string(ASCII 27 ESC) # ESC: 
-                     #   ASCII Code: 27
-                     #   HEX:        0x1B
-                     #   OCT:        033
-                     
-# --- ANSI 颜色代码定义 ----
-if (USE_CMAKE_COLORED_MESSAGES AND (NOT WIN32 OR CMAKE_GENERATOR STREQUAL "Ninja" OR CMAKE_COLOR_MAKEFILE))
-    set(C_RESET     "${ESC}[0m" )
-    set(C_BLACK     "${ESC}[30m")
-    set(C_RED       "${ESC}[31m")
-    set(C_GREEN     "${ESC}[32m")
-    set(C_YELLOW    "${ESC}[33m")
-    set(C_BLUE      "${ESC}[34m")
-    set(C_MAGENTA   "${ESC}[35m")
-    set(C_CYAN      "${ESC}[36m")
-    set(C_WHITE     "${ESC}[37m")
-
-    # 粗体/高亮 Bold/Bright
-    set(C_B_BLACK   "${ESC}[1;30m")
-    set(C_B_RED     "${ESC}[1;31m")
-    set(C_B_GREEN   "${ESC}[1;32m")
-    set(C_B_YELLOW  "${ESC}[1;33m")
-    set(C_B_BLUE    "${ESC}[1;34m")
-    set(C_B_MAGENTA "${ESC}[1;35m")
-    set(C_B_CYAN    "${ESC}[1;36m")
-    set(C_B_WHITE   "${ESC}[1;37m")
-else()
-    # 如果环境不支持彩色输出
-    set(C_RESET     "")
-    set(C_BLACK     "")
-    set(C_RED       "")
-    set(C_GREEN     "")
-    set(C_YELLOW    "")
-    set(C_BLUE      "")
-    set(C_MAGENTA   "")
-    set(C_CYAN      "")
-    set(C_WHITE     "")
-
-    set(C_B_BLACK   "")
-    set(C_B_RED     "")
-    set(C_B_GREEN   "")
-    set(C_B_YELLOW  "")
-    set(C_B_BLUE    "")
-    set(C_B_MAGENTA "")
-    set(C_B_CYAN    "")
-    set(C_B_WHITE   "")
-endif()
-
 
 # 设置等宽前缀
 function(_pretty_message_get_padded_prefix _type _output_var)
@@ -128,8 +78,6 @@ function(pretty_message_kv TYPE KEY VALUE)
 
     pretty_message(${TYPE} "${aligned_message}")
 endfunction()
-
-
 
 # --- 自定义消息函数 ---
 # 1. 简单消息输出

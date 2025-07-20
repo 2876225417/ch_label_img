@@ -433,7 +433,7 @@ private:
 template <typename HashType>
 constexpr auto 
 REFL_CHECK_HASH_COLLISION(HashType hash, const char* type_name)
-noexcept -> bool { return labelimg::core::refl::detail::HashCollisionDetector::instance().check_and_record(hash, type_name); }
+noexcept -> bool { return HashCollisionDetector::instance().check_and_record(hash, type_name); }
 
 #else
 template <typename HashType>
@@ -443,4 +443,4 @@ noexcept -> bool { return true; }
 #endif // NDEBUG
 
 
-}  // namespace labelimg::core::refl::detail
+}  // namespace labelimg::core::refl::hash

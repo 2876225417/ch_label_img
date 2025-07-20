@@ -1,6 +1,5 @@
 include_guard(GLOBAL)
 
-# 导出项目的配置
 option(EXPORT_PROJ_INFO  "Export project info into source"    ON)
 set(PROJ_INFO_INPUT      "${CMAKE_SOURCE_DIR}/include/proj_config.h.in" CACHE STRING "Project info configurations input file")
 set(PROJ_INFO_HEADER     "${CMAKE_BINARY_DIR}/include/proj_config.h" CACHE STRING "Project info generated configurations output file")
@@ -27,10 +26,9 @@ if (EXPORT_PROJ_INFO)
     endif()
 endif()
 
-function(print_project_info_debug_info)
+function(project_info_module_detail)
     pretty_message(DEBUG "ProjectInfo.cmake module loaded.")
     pretty_message(VINFO_BANNER "ProjectInfo Configuration" "=" ${BANNER_WIDTH})
     pretty_message_kv(VINFO "EXPORT_PROJ_INFO"      "${EXPORT_PROJ_INFO} ")
-    pretty_message_kv(VINFO "_DEPRECATED_INFO_"      "${_DEPRECATED_INFO_} ")
     pretty_message(VINFO_LINE "=" ${BANNER_WIDTH})
 endfunction()

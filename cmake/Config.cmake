@@ -26,5 +26,3 @@ include(ModuleInfo)
 
 include(QtInfo)
 
-
-

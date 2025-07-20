@@ -4,12 +4,11 @@ include(${CMAKE_CURRENT_LIST_DIR}/PrettyPrint.cmake)
 
 if (NOT DEFINED _MODULE_INFO_INITIALIZED)
     set(_MODULE_INFO_INITIALIZED TRUE CACHE INTERNAL "Module info system initialized")
-    set(CONFIGURED_MODULES "" CACHE INTERNAL "List of configured modules")
-    set(MODULE_INFO_LIST   "" CACHE INTERNAL "Detailed module information")
+    set(CONFIGURED_MODULES       ""   CACHE INTERNAL "List of configured modules")
+    set(MODULE_INFO_LIST         ""   CACHE INTERNAL "Detailed module information")
 else()
-    set(CONFIGURED_MODULES "" CACHE INTERNAL "List of configured modules")
+    set(CONFIGURED_MODULES       ""   CACHE INTERNAL "List of configured modules")
 endif()
-
 
 # 用法: module_begin(<module_name>)
 function(module_begin MODULE_NAME)
@@ -20,9 +19,9 @@ function(module_begin MODULE_NAME)
 
     pretty_message(VINFO_BANNER "Configuration ${MODULE_NAME} Module" "=" ${BANNER_WIDTH})
 
-    pretty_message_kv(VINFO "Module" "${MODULE_NAME}")
-    pretty_message_kv(VINFO "Location" "${CMAKE_CURRENT_SOURCE_DIR}")
-    pretty_message_kv(VINFO "Binary Dir" "${CMAKE_CURRENT_BINARY_DIR}")
+    pretty_message_kv(VINFO     "Module"     "${MODULE_NAME}")
+    pretty_message_kv(VINFO     "Location"   "${CMAKE_CURRENT_SOURCE_DIR}")
+    pretty_message_kv(VINFO     "Binary Dir" "${CMAKE_CURRENT_BINARY_DIR}")
 endfunction()
 
 # 用法: module_show_files(<file_type> <file_list>)
@@ -53,7 +52,6 @@ function(module_target_info TARGET_NAME)
         pretty_message(ERROR "Target '${TARGET_NAME}' does not exist")
         return()
     endif()
-
 
     get_target_property(TARGET_TYPE            ${TARGET_NAME} TYPE)
     get_target_property(TARGET_SOURCES         ${TARGET_NAME} SOURCES)
