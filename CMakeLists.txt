@@ -15,6 +15,7 @@ if (NOT CMAKE_BUILD_TYPE)
 set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build Type" FORCE)
 endif()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+option(BUILD_TESTS "Build tests" OFF)
 
 include(cmake/Config.cmake)
 
@@ -53,6 +54,12 @@ if(Qt6_FOUND)
 endif()
 
 add_subdirectory(${CMAKE_SOURCE_DIR}/src)
+
+if (BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(${CMAKE_SOURCE_DIR}/tests)
+endif()
+
 
 # pch 配置
 pch_configure()
