@@ -21,7 +21,6 @@ if (BUILD_PERFORMANCE_TESTS)
     set(BENCHMARK_USE_BUNDLED_GTEST  OFF CACHE BOOL "" FORCE)
     set(BENCHMARK_ENABLE_TESTING     OFF CACHE BOOL "" FORCE)
 
-
     FetchContent_Declare(
         benchmark
         GIT_REPOSITORY https://github.com/google/benchmark

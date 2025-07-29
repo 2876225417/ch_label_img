@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sys/types.h>
+#include <concepts>
 #include <cstddef>
 #include <cstdint>
 #include <string_view>
@@ -16,7 +17,6 @@ enum class StringHashAlgo
         djb2,
         murmur3,
         crc32,
-        city_hash
 };
 
 namespace fnv1a {
@@ -344,53 +344,210 @@ noexcept -> std::size_t
 
 } // namespace crc32 
 
-namespace city_hash {
-/*** CityHash 描述
- *   Google 开发的高性能非加密哈希算法
- */
 
-// CityHash 常数
-static constexpr std::uint64_t k0 = 0xc3a5c85c97cb3127ULL;
-static constexpr std::uint64_t k1 = 0xb492b66fbe98f273ULL;
-static constexpr std::uint64_t k2 = 0x9ae16a3b2f90404fULL;
-static constexpr std::uint64_t k3 = 0xc949d7c7509e6557ULL;
+template <typename Algorithm>
+concept HashAlgorithm = requires(const char* data, std::size_t len, std::string_view sv) {
+    { Algorithm::compute(data, len) } -> std::convertible_to<std::size_t>;
+    { Algorithm::compute(sv) } -> std::convertible_to<std::size_t>;
+} && requires {
+    { Algorithm::name } -> std::convertible_to<const char*>;
+    { Algorithm::algorithm_id } -> std::convertible_to<StringHashAlgo>;
+};
 
-constexpr auto 
-rotate(std::uint64_t val, int shift)
-noexcept -> std::uint64_t 
-{ return shift == 0 ? val : ((val >> shift) | (val << (64 - shift))); }
-
-constexpr auto rotate32(std::uint32_t val, int shift) noexcept -> std::uint32_t {
-    
-}
+template <StringHashAlgo AlgorithmID>
+struct AlgorithmBase {
+    static constexpr StringHashAlgo algorithm_id = algorithm_id;
+    static constexpr bool is_compile_time = true;
+    static constexpr bool is_cryptographic = false;
+};
 
 
+struct fnv1a_algorithm: AlgorithmBase<StringHashAlgo::fnv1a> {
+    static constexpr const char* name = "FNV-1a";
+    static constexpr int quality_score = 7;
 
-
-
-} // namespace city_hash
-
-
-template <StringHashAlgo Algo>
-struct AlgoSelector;
-
-template <>
-struct AlgoSelector<StringHashAlgo::fnv1a> {
     static constexpr auto 
-    compute(const char* data, std::size_t length)
+    compute(const char* data, std::size_t length) 
     noexcept -> std::size_t 
     { return fnv1a::compute(data, length); }
 
-    static constexpr auto
-    compute(std::string_view str)
+    static constexpr auto 
+    compute(std::string_view str) 
+    noexcept -> std::size_t 
+    { return fnv1a::compute(str);}
+
+    static constexpr auto 
+    compute_literal(const char* str) 
     noexcept -> std::size_t 
     { return fnv1a::compute(str); }
 };
 
+struct djb2_algorithm: AlgorithmBase<StringHashAlgo::djb2> {
+    static constexpr const char* name = "DJB2";
+    static constexpr int quality_score = 6;
+
+    static constexpr auto
+    compute(const char* data, std::size_t length)
+    noexcept -> std::size_t 
+    { return djb2::compute(data, length); }
+
+    static constexpr auto
+    compute(std::string_view str)
+    noexcept -> std::size_t 
+    { return djb2::compute(str); }
+
+    static constexpr auto
+    compute(const char* str)
+    noexcept -> std::size_t
+    { return djb2::compute(str); }
+};
+
+struct murmur3_algorithm: AlgorithmBase<StringHashAlgo::murmur3> {
+    static constexpr const char* name = "MURMUR3";
+    static constexpr int quality_score = 6;
+    
+    static constexpr auto
+    compute(const char* data, std::size_t length) 
+    noexcept -> std::size_t 
+    { return murmur3::compute(data, length); }
+
+    static constexpr auto
+    compute(std::string_view str) 
+    noexcept -> std::size_t 
+    { return murmur3::compute(str); }
+
+    static constexpr auto
+    compute(const char* str)
+    noexcept -> std::size_t
+    { return murmur3::compute(str); }
+};
+
+
+struct crc32_algorithm: AlgorithmBase<StringHashAlgo::crc32> {
+    static constexpr const char* name = "CRC32";
+    static constexpr int quality_score = 6;
+    
+    static constexpr auto
+    compute(const char* data, std::size_t length) 
+    noexcept -> std::size_t 
+    { return crc32::compute(data, length); }
+
+    static constexpr auto
+    compute(std::string_view str) 
+    noexcept -> std::size_t 
+    { return crc32::compute(str); }
+
+    static constexpr auto
+    compute(const char* str)
+    noexcept -> std::size_t
+    { return crc32::compute(str); }
+};
+
+template <StringHashAlgo AlgorithmID> // TODO(ppqwqqq): Remove static_assert
+struct AlgoSelector { static_assert(sizeof(AlgorithmID) == 0, "Unsupported algorithm"); };
+
 template <>
-struct AlgoSelector<StringHashAlgo::djb2> {};
+struct AlgoSelector<StringHashAlgo::fnv1a> { using type = fnv1a_algorithm; };
 
+template <>
+struct AlgoSelector<StringHashAlgo::djb2> { using type = djb2_algorithm; };
 
+template <>
+struct AlgoSelector<StringHashAlgo::murmur3> { using type = murmur3_algorithm; };
+
+template <>
+struct AlgoSelector<StringHashAlgo::crc32> { using type = crc32_algorithm; };
+
+template <HashAlgorithm Algorithm = fnv1a_algorithm>
+class HashComputer {
+public:
+    using algorithm_type = Algorithm;
+
+    static constexpr auto name() noexcept -> const char* { return Algorithm::name; }
+    static constexpr auto algorithm_id() noexcept -> int { return Algorithm::algorithm_id; }
+
+    static constexpr auto 
+    compute(const char* data, std::size_t length) 
+    noexcept -> std::size_t 
+    { return Algorithm::compute(data, length); }
+
+    static constexpr auto
+    compute(std::string_view str)
+    noexcept -> std::size_t
+    { return Algorithm::compute(str); }
+
+    static constexpr auto
+    compute(const char* str) 
+    noexcept -> std::size_t
+    { return Algorithm::compute(str); }
+
+    template <std::size_t N>
+    static constexpr auto 
+    compute(const char (&str)[N]) 
+    noexcept -> std::size_t 
+    { return Algorithm::compute(str,  N - 1); }
+
+    constexpr auto 
+    operator()(const char* data, size_t length) const 
+    noexcept -> std::size_t 
+    { return Algorithm::compute(data, length); }
+
+    constexpr auto
+    operator()(std::string_view str) const
+    noexcept -> std::size_t 
+    { return Algorithm::compute(str); }
+};
+
+class RuntimeHashComputer {
+private:
+    StringHashAlgo algorithm_;
+
+public:
+    explicit RuntimeHashComputer(StringHashAlgo algo): algorithm_(algo) { }
+
+    auto compute(const char* data, std::size_t length) const 
+    noexcept -> std::size_t {
+        switch(algorithm_) {
+            case StringHashAlgo::fnv1a:   return fnv1a_algorithm::compute(data, length);
+            case StringHashAlgo::djb2:    return djb2_algorithm::compute(data, length);
+            case StringHashAlgo::murmur3: return murmur3::compute(data, length);
+            case StringHashAlgo::crc32:   return crc32::compute(data, length);
+            default:                      return 0;
+        }
+    }
+
+    [[nodiscard]]
+    auto compute(std::string_view str) const noexcept -> std::size_t {
+        return compute(str.data(), str.length());
+    }
+};
+
+using DefaultHasher = HashComputer<fnv1a_algorithm>;
+using FastHasher = HashComputer<djb2_algorithm>;
+using QualityHasher = HashComputer<murmur3_algorithm>;
+using QuickHasher = HashComputer<crc32_algorithm>;
+
+template <StringHashAlgo AlgorithmID = StringHashAlgo::fnv1a>
+constexpr auto 
+compute_with_algorithm(const char* data, std::size_t lenghth) 
+noexcept -> std::size_t {
+    using SelectedAlogorithm = typename AlgoSelector<AlgorithmID>::type;
+    return SelectedAlogorithm::compute(data, lenghth);
+}
+
+template <StringHashAlgo AlgorithmID = StringHashAlgo::fnv1a>
+constexpr auto compute_with_algorithm(std::string_view str) noexcept -> std::size_t {
+    using SelectedAlgorithm = typename AlgoSelector<AlgorithmID>::type;
+    return SelectedAlgorithm::compute(str);
+}
+
+template <StringHashAlgo AlgorithmID = StringHashAlgo::fnv1a>
+constexpr auto
+compute_with_algorithm(const char* str)
+noexcept -> std::size_t {
+    using SelectedAlgorithm = typename AlgoSelector<AlgorithmID>::type;
+    return SelectedAlgorithm::compute(str); 
+}
 
 
 
