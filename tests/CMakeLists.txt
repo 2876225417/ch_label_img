@@ -74,8 +74,6 @@ if (BUILD_REGRESSION_TESTS)
     add_subdirectory(regression)
 endif()
 
-
-
 add_custom_target(run_unit_tests
     COMMAND ${CMAKE_CTEST_COMMAND} -L "unit" --output-on-failure
     DEPENDS unit_tests

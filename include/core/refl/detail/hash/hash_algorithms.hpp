@@ -278,7 +278,7 @@ noexcept -> std::uint64_t {
         k1 *= c1_64;
         k1 = rotl64(k1, r1_64);
         k1 *= c2_64;
-        h1 = k1;
+        h1 ^= k1;
     }
 
     h1 ^= static_cast<std::uint64_t>(length);
@@ -309,7 +309,7 @@ namespace crc32 {
  */
 
 // CRC32 多项式(IEEE 802.3)
-static constexpr std::uint32_t polynomial = 0x3db88320;
+static constexpr std::uint32_t polynomial = 0xedb88320;
 
 constexpr auto
 generate_crc32_table()
