@@ -8,9 +8,9 @@ target_include_directories(test_common
 
 add_library(test_common_impl
     STATIC
-    test_utils.cpp
-    mock_utils.cpp
-    benchmark_utils.cpp
+    test_utils.hpp
+    mock_utils.hpp
+    benchmark_utils.hpp
 )
 
 

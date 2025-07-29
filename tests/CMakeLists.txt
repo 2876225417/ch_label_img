@@ -6,6 +6,8 @@ option(BUILD_PERFORMANCE_TESTS "Build performance tests" OFF)
 option(BUILD_REGRESSION_TESTS  "Build regression tests"  OFF)
 option(ENABLE_COVERAGE         "Enable code coverage"    OFF)
 
+enable_testing()
+
 include(FetchContent)
 FetchContent_Declare(
     googletest
@@ -17,6 +19,8 @@ set(BUILD_GMOCK            ON  CACHE BOOL "" FORCE)
 set(BUILD_GTEST            ON  CACHE BOOL "" FORCE)
 set(INSTALL_GTEST          OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
+
+include(GoogleTest)
 
 if (BUILD_PERFORMANCE_TESTS)
     # 使用配置好的 googletest
@@ -40,10 +44,22 @@ if (ENABLE_COVERAGE)
     endif()
 endif()
 
+set_property(GLOBAL PROPERTY ALL_UNIT_TEST_TARGETS "")
+
 add_subdirectory(common)
 
 if (BUILD_UNIT_TESTS)
     add_subdirectory(unit)
+    
+    get_property(unit_test_targets GLOBAL PROPERTY ALL_UNIT_TEST_TARGETS)
+    if (unit_test_targets)
+        add_custom_target(unit_tests ALL)
+        add_dependencies(unit_tests ${unit_test_targets})
+    else()
+        add_custom_target(unit_tests ALL
+            COMMENT "No unit tests found"
+        )
+    endif()
 endif()
 
 if (BUILD_INTEGRATION_TESTS)
@@ -58,7 +74,7 @@ if (BUILD_REGRESSION_TESTS)
     add_subdirectory(regression)
 endif()
 
-enable_testing()
+
 
 add_custom_target(run_unit_tests
     COMMAND ${CMAKE_CTEST_COMMAND} -L "unit" --output-on-failure

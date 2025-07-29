@@ -24,7 +24,8 @@ gtest_discover_tests(refl_core_tests
         TIMEOUT 30
 )
 
-add_dependencies(unit_tests refl_core_tests)
+set_property(GLOBAL APPEND PROPERTY ALL_UNIT_TEST_TARGETS refl_core_tests)
+
 
 if (ENABLE_COVERAGE)
     target_compile_options(refl_core_tests PRIVATE --coverage)
