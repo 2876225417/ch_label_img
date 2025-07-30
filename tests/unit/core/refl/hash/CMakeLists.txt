@@ -1,5 +1,5 @@
 
-
+# test all hash 
 add_executable(hash_tests
     test_algorithms.cpp
     test_compile_time.cpp
@@ -18,8 +18,6 @@ target_include_directories(hash_tests
     ${CMAKE_SOURCE_DIR}/src
 )
 
-
-
 gtest_discover_tests(hash_tests
     PROPERTIES
         LABLES "unit;core;refl;hash;fast"
@@ -29,7 +27,7 @@ gtest_discover_tests(hash_tests
 set_property(GLOBAL APPEND PROPERTY ALL_UNIT_TEST_TARGETS hash_tests)
 
 
-
+# test compile time
 add_executable(hash_compile_time_tests
     test_compile_time.cpp
 )
@@ -60,42 +58,73 @@ gtest_discover_tests(hash_compile_time_tests
 
 set_property(GLOBAL APPEND PROPERTY ALL_UNIT_TEST_TARGETS hash_compile_time_tests)
 
-if (BUILD_PERFORMANCE_TESTS)
-    add_executable(hash_performance_tests
-        test_performance.cpp
+# test performance
+add_executable(hash_performance_tests
+    test_performance.cpp
+)
+
+target_link_libraries(hash_performance_tests
+    PRIVATE
+    test_common
+    gtest_main
+)
+
+if (BUILD_PERFORMANCE_TESTS AND TARGET benchmark::benchmark)
+    target_link_libraries(hash_performance_tests
+        PRIVATE
+        benchmark::benchmark
     )
 
-    target_link_libraries(hash_performance_tests
+    target_compile_definitions(hash_performance_tests
+        PRIVATE
+        BUILD_PERFORMANCE_TESTS
+    )
+endif()
+
+target_include_directories(hash_performance_tests
+    PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/tests/common
+)
+
+gtest_discover_tests(hash_performance_tests
+    PROPERTIES
+        LABLES "performance;core;refl;hash;slow"
+        TIMEOUT 300
+)
+
+set_property(GLOBAL APPEND PROPERTY ALL_UNIT_TEST_TARGETS hash_performance_tests)
+
+if (ENABLE_COVERAGE)
+    foreach(target hash_tests hash_compile_time_tests hash_performance_tests)
+        target_compile_options(${target} PRIVATE --coverage)
+        target_link_options(${target} PRIVATE --coverage)
+    endforeach()
+endif()
+
+if (BUILD_PERFORMANCE_TESTS AND TARGET benchmark::benchmark)
+    add_executable(hash_benchmarks
+        benchmark_hash.cpp
+    )
+
+    target_link_libraries(hash_benchmarks
         PRIVATE
         test_common
         benchmark::benchmark
-        gtest_main
     )
 
-    target_include_directories(hash_performance_tests
+    target_include_directories(hash_benchmarks
         PRIVATE
         ${CMAKE_SOURCE_DIR}/include
         ${CMAKE_SOURCE_DIR}/src
+        ${CMAKE_SOURCE_DIR}/tests/common
     )
 
-    gtest_discover_tests(hash_performance_tests
-        PROPERTIES
-            LABLES "performance;core;refl;hash;slow"
-            TIMEOUT 300
+    target_compile_definitions(hash_benchmarks 
+        PRIVATE
+        BUILD_PERFORMANCE_TESTS
     )
 
-    set_property(GLOBAL APPEND PROPERTY ALL_UNIT_TEST_TARGETS hash_compile_time_tests)
-endif()
-
-if (ENABLE_COVERAGE)
-    target_compile_options(hash_tests PRIVATE --coverage)
-    target_link_options(hash_tests PRIVATE --coverage)
-
-    target_compile_options(hash_compile_time_tests PRIVATE --coverage)
-    target_link_options(hash_compile_time_tests PRIVATE --coverage)
-
-    if (TARGET hash_performance_tests)
-        target_compile_options(hash_performance_tests PRIVATE --coverage)
-        target_link_options(hash_performance_tests PRIVATE --coverage)
-    endif()
+    set_property(GLOBAL APPEND PROPERTY ALL_PERF_TEST_TARGETS hash_benchmarks)
 endif()
