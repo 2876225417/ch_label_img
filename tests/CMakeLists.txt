@@ -52,72 +52,27 @@ if (ENABLE_COVERAGE)
     endif()
 endif()
 
-
+macro(create_test_group_target group_name property_name)
+    get_property(test_targets GLOBAL PROPERTY ${property_name})
+    if (test_targets)
+        add_custom_target(${group_name} ALL COMMENT "Building all ${group_name}")
+        add_dependencies(${group_name} ${test_targets})
+        pretty_message(STATUS "${group_name} targets: ${test_targets}")
+    else()
+        add_custom_target(${group_name} ALL COMMENT "No ${group_name} found")
+    endif()
+endmacro()
 
 add_subdirectory(common)
 
 if (BUILD_UNIT_TESTS)
     add_subdirectory(unit)
-    
-    get_property(unit_test_targets GLOBAL PROPERTY ALL_UNIT_TEST_TARGETS)
-    if (unit_test_targets)
-        add_custom_target(unit_tests
-            ALL
-            COMMENT "Building all unit tests"    
-        )
-        add_dependencies(unit_tests ${unit_test_targets})
-
-        add_custom_target(fast_tests # exclude perf tests
-            COMMAND ${CMAKE_CTEST_COMMAND} -L "fast" --output-on-failure
-            DEPENDS ${unit_test_targets}
-            COMMENT "Running fast unit tests"
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        )
-        pretty_message(STATUS "unit test targets: ${unit_test_targets}")
-    else()
-        add_custom_target(unit_tests ALL
-            COMMENT "No unit tests found"
-        )
-    endif()
+    create_test_group_target(unit_tests ALL_UNIT_TEST_TARGETS)
 endif()
 
 if (BUILD_PERFORMANCE_TESTS)
     add_subdirectory(performance)
-
-    get_property(perf_test_targets GLOBAL PROPERTY ALL_PERF_TEST_TARGETS)
-    if (perf_test_targets)
-        add_custom_target(performance_tests 
-            ALL
-            COMMENT "Building all performance tests"
-        )
-        add_dependencies(performance_tests ${perf_test_targets})
-
-        add_custom_target(run_performance_tests
-            COMMAND ${CMAKE_CTEST_COMMAND} -L "performance" --output-on-failure
-            DEPENDS ${perf_test_targets}
-            COMMENT "Running performance tests"
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        )
-
-        add_custom_target(run_benchmarks
-            COMMENT "Running all benchmark executable"
-            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        )
-
-        foreach (target ${perf_test_targets})
-            add_custom_command(TARGET run_benchmarks POST_BUILD
-                COMMAND $<TARGET_FILE:${target}> --benchmark_format=console
-                COMMENT "Running ${target}"
-            )
-        endforeach()
-
-        pretty_message(STATUS "performance test targets: ${perf_test_targets}")
-    else()
-        add_custom_target(performance_tests 
-            ALL
-            COMMENT "No performance tests found"
-        )
-    endif()
+    create_test_group_target(performance_tests ALL_PERF_TEST_TARGETS)
 endif()
 
 if (BUILD_INTEGRATION_TESTS)
@@ -189,7 +144,7 @@ if (ENABLE_COVERAGE)
             COMMAND ${GENHTML_PATH} coverage_filtered.info --output-directory coverage_html
 
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-            COMMENT "Generating coverage report"
+            COMMENT "Generating coverage report..."
         )
     endif()
 endif()

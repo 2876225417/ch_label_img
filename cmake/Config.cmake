@@ -5,6 +5,7 @@ list(APPEND CMAKE_MODULE_PATH
     "${CMAKE_CURRENT_LIST_DIR}/core"
     "${CMAKE_CURRENT_LIST_DIR}/deps"
     "${CMAKE_CURRENT_LIST_DIR}/misc"
+    "${CMAKE_CURRENT_LIST_DIR}/test"
 )
 
 # 交叉编译
@@ -25,4 +26,8 @@ include(DependencyManager)
 include(ModuleInfo)
 
 include(QtInfo)
+
+# test
+include(PerfTools)
+include(ValgrindTools)
 

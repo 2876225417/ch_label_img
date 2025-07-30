@@ -1,6 +1,3 @@
-
-
-if (BUILD_PERFORMANCE_TESTS)
-
-endif()
+add_subdirectory(core)
+add_subdirectory(stress_test)
 

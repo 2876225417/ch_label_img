@@ -14,14 +14,9 @@
 // -------------------------------------------------------- //
 
 
-#include "gtest/gtest.h"
 #include <gtest/gtest.h>
 #include "benchmark_utils.hpp"
 #include "sample_data.hpp"
-
-#ifdef BUILD_PERFORMANCE_TESTS
-#include <benchmark/benchmark.h>
-#endif
 
 #include <string>
 #include <vector>
@@ -269,6 +264,4 @@ TEST_F(HashPerformanceTest, CompileTimeHashTest) {
     std::cout << "Compile-time hash 1: 0x" << std::hex << compile_time_hash1 << '\n';
     std::cout << "Runtime hash 1:      0x" << std::hex << runtime_hash1 << '\n';
     std::cout << "Hashes match: " << (compile_time_hash1 == runtime_hash1 ? "YES" : "NO") << '\n';
-    
-
 }
