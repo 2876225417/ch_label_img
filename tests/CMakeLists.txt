@@ -6,6 +6,8 @@ option(BUILD_PERFORMANCE_TESTS "Build performance tests" OFF)
 option(BUILD_REGRESSION_TESTS  "Build regression tests"  OFF)
 option(ENABLE_COVERAGE         "Enable code coverage"    OFF)
 
+# TODO(ppqwqqq): Change the binary file output directory
+
 set_property(GLOBAL PROPERTY ALL_UNIT_TEST_TARGETS "")
 set_property(GLOBAL PROPERTY ALL_PERF_TEST_TARGETS "")
 

@@ -35,5 +35,4 @@ function(add_profiling_target_with_perf_record TARGET_NAME)
             COMMENT "Profiling '${TARGET_NAME}' with perf record'.\nRun 'perf report' after execution to analyze the generated perf.data file."
         )
     endif()
-
 endfunction()
