@@ -94,7 +94,7 @@ gtest_discover_tests(hash_performance_tests
         TIMEOUT 300
 )
 
-set_property(GLOBAL APPEND PROPERTY ALL_UNIT_TEST_TARGETS hash_performance_tests)
+set_property(GLOBAL APPEND PROPERTY ALL_PERF_TEST_TARGETS hash_performance_tests)
 
 if (ENABLE_COVERAGE)
     foreach(target hash_tests hash_compile_time_tests hash_performance_tests)
@@ -111,7 +111,7 @@ if (BUILD_PERFORMANCE_TESTS AND TARGET benchmark::benchmark)
     target_link_libraries(hash_benchmarks
         PRIVATE
         test_common
-        benchmark::benchmark
+        benchmark::benchmark_main
     )
 
     target_include_directories(hash_benchmarks

@@ -9,7 +9,9 @@ struct SampleData {
     static auto get_short_strings()
     -> const std::vector<std::string>& {
         static const std::vector<std::string> data = {
-            "a", "ab", "abc", "test", "hello", "world", "hash", "perf"
+            "a",    "ab",    "abc",
+            "test", "hello", "world",
+            "hash", "perf"
         };
         return data;
     }
@@ -65,13 +67,13 @@ struct SampleData {
 };
 
 struct PerfConfig {
-    static constexpr size_t WARMUP_ITERATIONS = 1000;
-    static constexpr size_t MEASUREMENT_ITERATIONS = 10000;
-    static constexpr size_t STRESS_TEST_ITERATIONS = 100000;
+    static constexpr size_t WARMUP_ITERATIONS          = 1000;
+    static constexpr size_t MEASUREMENT_ITERATIONS     = 10000;
+    static constexpr size_t STRESS_TEST_ITERATIONS     = 100000;
 
-    static constexpr double SHORT_STRING_THREHOLD_US = 1.0;
+    static constexpr double SHORT_STRING_THREHOLD_US   = 1.0;
     static constexpr double MEDIUM_STRING_THRESHOLD_US = 5.0;
-    static constexpr double LONG_STRING_THRESHOLD_US = 20.0;
+    static constexpr double LONG_STRING_THRESHOLD_US   = 20.0;
 };
 
 

@@ -361,7 +361,6 @@ struct AlgorithmBase {
     static constexpr bool is_cryptographic = false;
 };
 
-
 struct fnv1a_algorithm: AlgorithmBase<StringHashAlgo::fnv1a> {
     static constexpr const char* name = "FNV-1a";
     static constexpr int quality_score = 7;
@@ -510,9 +509,19 @@ public:
         switch(algorithm_) {
             case StringHashAlgo::fnv1a:   return fnv1a_algorithm::compute(data, length);
             case StringHashAlgo::djb2:    return djb2_algorithm::compute(data, length);
-            case StringHashAlgo::murmur3: return murmur3::compute(data, length);
-            case StringHashAlgo::crc32:   return crc32::compute(data, length);
+            case StringHashAlgo::murmur3: return murmur3_algorithm::compute(data, length);
+            case StringHashAlgo::crc32:   return crc32_algorithm::compute(data, length);
             default:                      return 0;
+        }
+    }
+
+    auto name() -> const char* { 
+        switch(algorithm_) {
+            case StringHashAlgo::fnv1a:   return fnv1a_algorithm::name;
+            case StringHashAlgo::djb2:    return djb2_algorithm::name;
+            case StringHashAlgo::murmur3: return murmur3_algorithm::name;
+            case StringHashAlgo::crc32:   return crc32_algorithm::name;
+            default:                      return "Unknown hash algorithm";
         }
     }
 

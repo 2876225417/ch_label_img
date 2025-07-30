@@ -25,7 +25,7 @@ public:
 
     void reset() { start_ = std::chrono::high_resolution_clock::now(); }
 
-    [[nodiscard]] 
+    [[nodiscard]]
     auto elapsed_ms() const -> double { 
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start_);
@@ -38,35 +38,34 @@ public:
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start_);
         return static_cast<double>(duration.count());
     }
-
 private:
     std::chrono::high_resolution_clock::time_point start_;
 };
 
 struct PerfStats {
-    double min_time = std::numeric_limits<double>::max();
-    double max_time = 0.0;
+    double min_time   = std::numeric_limits<double>::max();
+    double max_time   = 0.0;
     double total_time = 0.0;
-    double avg_time = 0.0;
+    double avg_time   = 0.0;
     size_t iterations = 0;
 
     void add_measurement(double time) {
-        min_time = std::min(min_time, time);
-        max_time = std::max(max_time, time);
+        min_time   = std::min(min_time, time);
+        max_time   = std::max(max_time, time);
         total_time += time;
         ++iterations;
-        avg_time = total_time / iterations;
+        avg_time   = total_time / iterations;
     }
 
     void print(const std::string& name) const {
-        std::cout << std::fixed << std::setprecision(3);
+        std::cout << std::fixed     << std::setprecision(3);
         std::cout << "=== " << name << " Performance Stats ===" << '\n';
         std::cout << "Iterations: " << iterations << '\n';
-        std::cout << "Min time: " << min_time << '\n';
-        std::cout << "Max time: " << max_time << '\n';
-        std::cout << "Avg time: " << avg_time << '\n';
+        std::cout << "Min time: "   << min_time << '\n';
+        std::cout << "Max time: "   << max_time << '\n';
+        std::cout << "Avg time: "   << avg_time << '\n';
         std::cout << "Total time: " << total_time << '\n';
-        std::cout << "Througput: " << (iterations * 1000000.0 / total_time) << " ops/sec" << '\n';
+        std::cout << "Througput: "  << (iterations * 1000000.0 / total_time) << " ops/sec" << '\n';
     }
 };
 
@@ -89,6 +88,20 @@ public:
                 str += static_cast<char>(dis(gen));
             result.push_back(std::move(str));
         }
+        return result;
+    }
+
+    static auto
+    generate_similar_strings(size_t count)
+    -> std::vector<std::string> {
+        std::vector<std::string> result;
+        result.reserve(count);
+        
+        std::string prefix = "similar_string_";
+
+        for (int i = 0; i < count; ++i)
+            result.push_back(prefix + std::to_string(i));
+
         return result;
     }
 
@@ -136,6 +149,8 @@ public:
 
         return result;
     }
+
+    
 };
 
 #define PERF_TEST(name) \
