@@ -50,6 +50,8 @@ BENCHMARK_TEMPLATE(BM_SingleStringHashFor, StringHashAlgo::murmur3) -> Name("Has
 BENCHMARK_TEMPLATE(BM_SingleStringHashFor, StringHashAlgo::crc32) -> Name("Hash/crc32");
 
 
+
+
 template <StringHashAlgo Algorithm>
 static void BM_RuntimeSingleStringHashFor(benchmark::State& state) {
     const std::string test_str = "benchmark_string";

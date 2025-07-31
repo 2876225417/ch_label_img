@@ -18,6 +18,7 @@ include(ProjectVerbose)
 include(ProjectInfo)
 include(PCH)
 include(PythonConfig)
+include(CompileOptions)
 
 # deps
 include(DependencyManager)

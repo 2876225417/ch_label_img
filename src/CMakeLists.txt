@@ -33,3 +33,12 @@ target_link_libraries(label_img
     core
     proj_config
 )
+
+set_target_properties(label_img
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)
+
+target_apply_options(label_img)

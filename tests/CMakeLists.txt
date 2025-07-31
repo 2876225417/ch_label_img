@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/tests)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/tests)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/tests)
+
 option(BUILD_UNIT_TESTS        "Build unit tests"        ON)
 option(BUILD_INTEGRATION_TESTS "Build integration tests" OFF)
 option(BUILD_PERFORMANCE_TESTS "Build performance tests" OFF)

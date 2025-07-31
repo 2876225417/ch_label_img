@@ -15,9 +15,9 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # TODO(ppqwqqq): Add compile options when build type is debug
 # compile options for valgrind, test, perf and so on.
 if (NOT CMAKE_BUILD_TYPE)
-set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build Type" FORCE)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Build Type (Debug, Release, RelWithDebInfo)" FORCE)
 endif()
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 option(BUILD_TESTS "Build tests" OFF)
 
 include(cmake/Config.cmake)
