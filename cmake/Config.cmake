@@ -19,6 +19,7 @@ include(ProjectInfo)
 include(PCH)
 include(PythonConfig)
 include(CompileOptions)
+include(BuildConfig)
 
 # deps
 include(DependencyManager)
@@ -31,4 +32,12 @@ include(QtInfo)
 # test
 include(PerfTools)
 include(ValgrindTools)
+
+
+# GLOBAL CONFIGS
+
+# TARGET CONFIGS
+
+
+
 

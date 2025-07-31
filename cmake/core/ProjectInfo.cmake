@@ -1,6 +1,6 @@
 include_guard(GLOBAL)
 
-option(EXPORT_PROJ_INFO  "Export project info into source"    ON)
+option(EXPORT_PROJ_INFO  "Export project info into source"                      ON)
 set(PROJ_INFO_INPUT      "${CMAKE_SOURCE_DIR}/include/proj_config.h.in" CACHE STRING "Project info configurations input file")
 set(PROJ_INFO_HEADER     "${CMAKE_BINARY_DIR}/include/proj_config.h" CACHE STRING "Project info generated configurations output file")
 string(TIMESTAMP BUILD_TIMESTAMP "%Y-%m-%d %H:%M:%S")

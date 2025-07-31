@@ -62,5 +62,6 @@ function(target_apply_options TARGET_NAME)
 
     target_compile_options(${TARGET_NAME} PRIVATE $<$<CONFIG:RelWithDebInfo>:${RELWITHDEBINFO_COMPILE_FLAGS}>)
     target_compile_definitions(${TARGET_NAME} PRIVATE $<$<CONFIG:RelWithDebInfo>:${RELWITHDEBINFO_DEFINITIONS}>)
+
 endfunction()
 
