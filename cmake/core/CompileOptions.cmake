@@ -1,5 +1,8 @@
 include_guard(GLOBAL)
 
+
+# TODO(ppqwqqq): Specific compile options for clang
+
 set(WARNING_FLAGS
     -Wall
     -Wextra

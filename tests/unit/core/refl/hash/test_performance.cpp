@@ -46,8 +46,7 @@ TEST_F(HashPerformanceTest, ShorStringPerformance) {
         using algo = typename AlgoSelector<Algorithm>::type;
         auto stats = benchmark_function(algo::name, [&]() {
             for (const auto& str: test_strings) {
-                volatile auto hash = algo::compute(str);
-                (void)hash;
+                [[maybe_unused]]volatile auto hash = algo::compute(str);    
             }
         }, PerfConfig::MEASUREMENT_ITERATIONS);
 

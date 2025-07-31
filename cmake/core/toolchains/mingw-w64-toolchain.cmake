@@ -20,7 +20,7 @@ if (NOT PKG_CONFIG_EXECUTABLE)
     pretty_message(WARNING "Cross-compiling pkg-config not found. Dependencies using pkg-config might fail.")
 endif()
 
-set(Python_ROOT_DIR 
+set(Python_ROOT_DIR # Python executable for cross-compile 
     "/usr/x86_64-w64-mingw32/bin" 
     CACHE PATH 
     "Root directory of the target Python installed."
