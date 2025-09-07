@@ -28,8 +28,6 @@
 
 using namespace labelimg::core::refl::hash::algorithms;
 
-
-using namespace test::common;
 using namespace test::common;
 
 template <StringHashAlgo Algorithm>
@@ -48,9 +46,6 @@ BENCHMARK_TEMPLATE(BM_SingleStringHashFor, StringHashAlgo::fnv1a) -> Name("Hash/
 BENCHMARK_TEMPLATE(BM_SingleStringHashFor, StringHashAlgo::djb2) -> Name("Hash/djb2");
 BENCHMARK_TEMPLATE(BM_SingleStringHashFor, StringHashAlgo::murmur3) -> Name("Hash/murmur3");
 BENCHMARK_TEMPLATE(BM_SingleStringHashFor, StringHashAlgo::crc32) -> Name("Hash/crc32");
-
-
-
 
 template <StringHashAlgo Algorithm>
 static void BM_RuntimeSingleStringHashFor(benchmark::State& state) {

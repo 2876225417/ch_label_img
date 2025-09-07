@@ -6,7 +6,7 @@ find_program(CMAKE_C_COMPILER clang)
 find_program(CMAKE_CXX_COMPILER clang++)
 
 if (NOT CMAKE_C_COMPILER OR NOT CMAKE_CXX_COMPILER)
-    pretty_message(FATAL "Could not find Clang compiler (clang/clang++).")
+pretty_message(FATAL "Could not find Clang compiler (clang/clang++).")
 endif()
 
 # Install lld if not installed
